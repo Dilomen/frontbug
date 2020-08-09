@@ -1,0 +1,15 @@
+{
+  "name": "vangen",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "co-body": "^6.0.0",
+    "dayjs": "^1.8.31",
+    "koa": "^2.13.0",
+    "koa-bodyparser": "^4.3.0",
+    "koa-router": "^9.1.0",
+    "koa-static": "^5.0.0",
+    "koa2-useragent": "^0.3.2"
+  }
+}

@@ -7,7 +7,7 @@ const commonjs = require('rollup-plugin-commonjs');
 const babel = require('rollup-plugin-babel');
 
 module.exports = {
-  input: "./lib/report.js",
+  input: "./lib/index.js",
   output: [{
     name: 'index.js',
     file: 'es/index.js',

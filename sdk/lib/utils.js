@@ -27,12 +27,10 @@ export function loadLink(href) {
 }
 
 export class MyLoopQueue {
-  Queue = [];
-  front = 0;
-  tail = 0;
-  size = 0;
-
   constructor(capacity = 10) {
+    this.front = 0
+    this.tail = 0
+    this.size = 0
     this.Queue = new Array(capacity);
   }
 
@@ -82,10 +80,9 @@ export class MyLoopQueue {
 }
 
 export class LoopQueue {
-  Queue = [];
-  size = 0;
   constructor() {
     this.Queue = [];
+    this.size = 0;
   }
   getSize() {
     return this.size;

@@ -12,6 +12,9 @@
 <script>
 export default {
   name: 'app',
+  mounted() {
+    var myChart = echarts.init(document.getElementById('main'));
+  },
   methods: {
     handleReferenceError () {
       // eslint-disable-next-line no-console

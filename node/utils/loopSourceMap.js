@@ -6,7 +6,9 @@ function fixPath(filepath) {
   return filepath.replace(/\.[\.\/]+/g, '');
 }
 async function loopSourceMap(filepath, line, column, callback) {
-  const data = fs.readFileSync(path.resolve(__dirname, './map/' + filepath), 'utf-8');
+  let data
+  try { data = fs.readFileSync(path.resolve(__dirname, './map/' + filepath), 'utf-8'); } catch(e) { data = false }
+  if (!data) return {}
   var fileContent = data.toString(),
     fileObj = JSON.parse(fileContent),
     sources = fileObj.sources;
@@ -18,7 +20,7 @@ async function loopSourceMap(filepath, line, column, callback) {
     line: parseInt(line),
     column: parseInt(column),
   };
-  // 
+  //
   var result = consumer.originalPositionFor(lookup);
   var originSource = sourcesPathMap[result.source],
   // 在gragh数组中找到对应模块下的代码

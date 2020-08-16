@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import Vue from 'vue'
 import App from './App.vue'
-import FrontBug from '../../../lib/report'
+import FrontBug from '../../../es/index'
 Vue.use(FrontBug)
 
 Vue.config.productionTip = false

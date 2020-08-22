@@ -3,6 +3,12 @@ const app = new Koa();
 const bodyParser = require("koa-bodyparser");
 const userAgent = require('koa2-useragent');
 const KoaStatic = require('koa-static');
+const logger = require('./logs/logs')
+
+// 全局错误事件监听
+app.on('error', (error)=>{
+  logger.error(error)
+});
 app.use((async function(ctx,next){
   if (ctx.path === '/errorRequestFromBeacon') ctx.disableBodyParser = true;//判断请求的路由路径
   await next();
@@ -20,7 +26,7 @@ app.use(async (ctx, next) => {
 
 // let errorList = []
 const router = require('./router/index')
-//
+
 // router.get('/error-list', async (ctx) => {
 //   ctx.body = errorList
 // })
@@ -34,21 +40,10 @@ const router = require('./router/index')
 //   ctx.body = matchError[0]
 // })
 
-
-// let cache = {}
-// app.post('/upload', (req, res) => {
-//   cache = req.body
-// });
-//
-// app.get('/video', (req, res) => {
-//   console.log(cache)
-//   res.send(JSON.stringify(cache))
-// })
-
-
 app.use(router.routes())
     .use(router.allowedMethods())
-    .use(KoaStatic('./dist'))
-    .use(KoaStatic('./build'))
-    .use(KoaStatic('./map'));
-app.listen('3090', () => console.log('http://localhost:3090'));
+    .use(KoaStatic('./public'))
+    .use(KoaStatic('./public/dist'))
+    .use(KoaStatic('./public/build'))
+    .use(KoaStatic('./public/map'))
+module.exports = app.listen('3090', () => console.log('http://localhost:3090'));

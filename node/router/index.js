@@ -2,8 +2,8 @@ const Router = require("koa-router");
 const router = new Router();
 const fs = require('fs')
 const path = require('path');
-const ErrorController = require('../Controller/error')
-const file = fs.readFileSync(path.resolve(__dirname, '../dist/index.html'), 'utf-8');
+const ErrorController = require('../controller/error')
+const file = fs.readFileSync(path.resolve(__dirname, '../public/dist/index.html'), 'utf-8');
 router.get("/", async (ctx) => {
     ctx.body = file
 });

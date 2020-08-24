@@ -13,7 +13,7 @@
 export default {
   name: 'app',
   mounted() {
-    var myChart = echarts.init(document.getElementById('main'));
+    var myChart = echarts.init(document.getElementById('asdasdmain'));
   },
   methods: {
     handleReferenceError () {

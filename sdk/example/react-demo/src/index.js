@@ -3,11 +3,11 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App.jsx';
 import * as serviceWorker from './serviceWorker';
-import { ErrorRequest } from './es/index'
-const ErrorWatch = new ErrorRequest(React)
+import { ErrorRequest } from 'report'
+const ErrorWatch = ErrorRequest(React)
 ReactDOM.render(<ErrorWatch>
     <React.StrictMode>
-        <App />
+      <App />
     </React.StrictMode>
   </ErrorWatch>,
   document.getElementById('root')

@@ -3,7 +3,7 @@ const app = new Koa();
 const bodyParser = require("koa-bodyparser");
 const userAgent = require('koa2-useragent');
 const KoaStatic = require('koa-static');
-const logger = require('./logs/logs')
+const logger = require('./logs')
 
 // 全局错误事件监听
 app.on('error', (error)=>{
@@ -46,4 +46,4 @@ app.use(router.routes())
     .use(KoaStatic('./public/dist'))
     .use(KoaStatic('./public/build'))
     .use(KoaStatic('./public/map'))
-module.exports = app.listen('3090', () => console.log('http://localhost:3090'));
+module.exports = app.listen('3090');

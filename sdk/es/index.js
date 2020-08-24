@@ -1,3 +1,10 @@
+function isIE() {
+  if (!!window.ActiveXObject || "ActiveXObject" in window || navigator.userAgent.indexOf("Edge") > -1) {
+    return true;
+  } else {
+    return false;
+  }
+}
 function loadScript(src) {
   return new Promise((resolve, reject) => {
     let script = document.createElement('script');
@@ -84,7 +91,7 @@ const CONFIG_COUNT = 50;
 const MAX_COUNT = CONFIG_COUNT ;
 const queue =  new MyLoopQueue(MAX_COUNT);
 function initRecord() {
-  rrweb.record({
+  window.rrweb.record({
     emit(event) {
       if (queue.getSize() >= MAX_COUNT) {
         queue.dequeue();
@@ -100,6 +107,10 @@ async function getEventRecord() {
 }
 
 const BASE_URL = 'http://localhost:3090';
+const frontbugConfig = {
+  isFramework: true,
+  isNeedRecord: true
+};
 
 {
   loadLink('https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.css');
@@ -114,90 +125,114 @@ const URL_GROUP = {
 };
 let timer = null;
 /**
- * 手动上报
+ * 手动上报错误
  * @param {Object} err 错误对象
  * @param {Boolean} isFramework 是否是框架，即代码是否被编译
  */
 
-const report = (formData, type = 'error') => {
+const reportError = async (error, isFramework = frontbugConfig.isFramework) => {
   clearTimeout(timer);
+  let errorObj = error.type === 'unhandledrejection' ? {
+    type: error.type,
+    msg: error.reason
+  } : handleError(error);
+  const eventsRecord =  await getEventRecord() ;
+  errorObj = { ...errorObj,
+    error: error.stack,
+    eventsRecord,
+    url: window.location.href,
+    framework: isFramework
+  };
   timer = setTimeout(async () => {
-    const data = JSON.stringify(formData);
-
-    if (window.navigator.sendBeacon) {
-      window.navigator.sendBeacon(URL_GROUP[type] + 'FromBeacon', data); // IE的URL长度限制为2083，其余浏览器更大，支持最小且主流的Chrome长度限制为8182
-    } else if (isIE && e.length < 2083 || !isIE && e.length < 8182) {
-      let image = new Image();
-      image.src = URL_GROUP[type] + '?' + encodeURIComponent(JSON.stringify(data));
-    } else if (window.fetch) {
-      fetch(URL_GROUP[type], {
-        body: data,
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json; charset=utf-8'
-        }
-      });
-    } else {
-      let XHR = null;
-
-      if (window.XMLHttpRequest) {
-        XHR = new XMLHttpRequest();
-      }
-
-      XHR.withCredentials = true;
-      XHR.open('POST', URL_GROUP[type], false);
-      XHR.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
-      XHR.send(data);
-    }
-  }, 30);
+    report(URL_GROUP['error'], errorObj);
+  });
 };
 
-const oldError = console.error;
+function report(reportUrl, dataObj) {
+  const data = JSON.stringify(dataObj);
 
-console.error = function (e) {
-  try {
-    throw new Error(e);
-  } catch (err) {
-    const stackT = err.stack.split('\n')[2];
-    let errObj = handleError(stackT);
-
-    if (!errObj) {
-      return false;
-    }
-
-    report({
-      msg: err.message,
-      ...errObj,
-      error: err.stack
+  if (window.navigator.sendBeacon) {
+    window.navigator.sendBeacon(reportUrl + 'FromBeacon', data); // IE的URL长度限制为2083，其余浏览器更大，支持最小且主流的Chrome长度限制为8182
+  } else if (isIE() && encodeURIComponent(data).length < 2083 || !isIE() && encodeURIComponent(data).length < 8182) {
+    let image = new Image();
+    image.src = reportUrl + '?' + encodeURIComponent(data);
+  } else if (window.fetch) {
+    fetch(reportUrl, {
+      body: data,
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json; charset=utf-8'
+      }
     });
+  } else {
+    let XHR = null;
+
+    if (window.XMLHttpRequest) {
+      XHR = new window.XMLHttpRequest();
+    } else if (window.ActiveXObject) {
+      XHR = new window.ActiveXObject();
+    } // XHR.withCredentials = true
+
+
+    XHR.open('POST', reportUrl, true);
+    XHR.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+    XHR.send(data);
+  }
+}
+
+function handleError(error) {
+  const msg = error.message;
+  const errorStack = error.stack && error.stack.split('\n') || [];
+  const pattern = window.location.origin;
+  let errorStackPosition = errorStack.find(errorItem => new RegExp(pattern).test(errorItem));
+
+  if (errorStackPosition) {
+    let index = errorStackPosition.lastIndexOf('/');
+    const [path, lineNoStr, columnNoStr] = errorStackPosition.substr(index + 1).split(':');
+    const lineNo = Number(lineNoStr.match(/\d+/)[0]);
+    const columnNo = Number(columnNoStr.match(/\d+/)[0]);
+    return {
+      path,
+      lineNo,
+      columnNo,
+      msg,
+      error
+    };
   }
 
-  return oldError.apply(console, arguments);
-}; // 重写Promise.reject
+  return false;
+}
 
-
-const oldReject = Promise.reject;
-
-Promise.reject = function (e) {
-  try {
-    throw new Error(e);
-  } catch (err) {
-    const stackT = err.stack.split('\n')[2];
-    let errObj = handleError(stackT);
-
-    if (!errObj) {
-      return false;
-    }
-
-    report({
-      msg: err.message,
-      ...errObj,
-      error: err.stack
-    });
-  }
-
-  return () => oldReject.apply(Promise, arguments);
-}; // window.onerror = function(msg, path, lineNo, columnNo, error) {
+// const oldError = console.error
+// console.error = function(e) {
+//   try {
+//     throw new Error(e)
+//   } catch(err) {
+//     const stackT = err.stack.split('\n')[2]
+//     let errObj = handleError(stackT);
+//     if (!errObj) {
+//       return false;
+//     }
+//     report({ msg: err.message, ...errObj, error: err.stack });
+//   }
+//   return oldError.apply(console, arguments)
+// }
+// // 重写Promise.reject
+// const oldReject = Promise.reject
+// Promise.reject = function(e) {
+//   try {
+//     throw new Error(e)
+//   } catch(err) {
+//     const stackT = err.stack.split('\n')[2]
+//     let errObj = handleError(stackT);
+//     if (!errObj) {
+//       return false;
+//     }
+//     report({ msg: err.message, ...errObj, error: err.stack });
+//   }
+//   return () => oldReject.apply(Promise, arguments)
+// }
+// window.onerror = function(msg, path, lineNo, columnNo, error) {
 //   const errorObj = {
 //     msg,
 //     path,
@@ -209,24 +244,8 @@ Promise.reject = function (e) {
 //   report(errorObj)
 // };
 
-
 window.addEventListener('error', event => {
-  const {
-    message: msg,
-    filename: path,
-    lineno: lineNo,
-    colno: columnNo,
-    error
-  } = event;
-  const errorObj = {
-    msg,
-    path,
-    lineNo,
-    columnNo,
-    error,
-    framework: false
-  };
-  report(errorObj);
+  reportError(event.error, false);
 }, true); // 对没有catch的reject进行监听
 
 window.addEventListener('unhandledrejection', function (event) {
@@ -235,22 +254,22 @@ window.addEventListener('unhandledrejection', function (event) {
     type,
     reason
   } = event;
-  report({
+  reportError({
     type,
     msg: reason
-  });
+  }, false);
 }); // 对vue进行上报
 
 function install(Vue) {
   Vue.config.errorHandler = function (err) {
-    reportError(err);
+    reportError(err, true);
   };
 } // 对react进行上报
 
 function ErrorRequest(React) {
   class Error extends React.Component {
     componentDidCatch(err) {
-      reportError(err);
+      reportError(err, true);
     }
 
     render() {
@@ -262,47 +281,9 @@ function ErrorRequest(React) {
   return Error;
 }
 
-async function reportError(err) {
-  const error = err.stack;
-  const msg = err.toString();
-  const errorStackTop = !!error && error.split('\n')[1];
-  let errObj = handleError(errorStackTop);
-
-  if (!errObj) {
-    return false;
-  }
-
-  const eventsRecord = await getEventRecord();
-  const formData = { ...errObj,
-    msg,
-    url: window.location.href,
-    framework: true,
-    eventsRecord,
-    error
-  };
-  report(formData);
-}
-
-function handleError(errorStackLine) {
-  if (errorStackLine) {
-    let index = errorStackLine.lastIndexOf('/');
-    const [path, lineNoStr, columnNoStr] = errorStackLine.substr(index + 1).split(':');
-    const lineNo = Number(lineNoStr.match(/\d+/)[0]);
-    const columnNo = Number(columnNoStr.match(/\d+/)[0]);
-    return {
-      path,
-      lineNo,
-      columnNo
-    };
-  }
-
-  return false;
-}
-
-// // 加载lz-string库，用以压缩字符串数据
 var index = {
-  ErrorRequest,
   install
 };
 
 export default index;
+export { ErrorRequest };

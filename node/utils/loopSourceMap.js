@@ -5,9 +5,9 @@ let sourcesPathMap = {};
 function fixPath(filepath) {
   return filepath.replace(/\.[\.\/]+/g, '');
 }
-async function loopSourceMap(filepath, line, column, callback) {
+async function loopSourceMap(filepath, line, column) {
   let data
-  try { data = fs.readFileSync(path.resolve(__dirname, '../publc/map/' + filepath), 'utf-8'); } catch(e) { data = false }
+  try { data = fs.readFileSync(path.resolve(__dirname, '../public/map/' + filepath), 'utf-8'); } catch(e) { throw new Error('没有找到map文件'); data = false }
   if (!data) return {}
   var fileContent = data.toString(),
     fileObj = JSON.parse(fileContent),
@@ -26,7 +26,7 @@ async function loopSourceMap(filepath, line, column, callback) {
     sourcesContent = fileObj.sourcesContent[sources.indexOf(originSource)];
     consumer.sourceContentFor(originSource)
   result.sourcesContent = sourcesContent;
-  callback && callback(result);
+  return result;
   // 当consumer不再使用，必须调用destroy
   // consumer && consumer.destroy();
 }

@@ -1,3 +1,11 @@
+export function isIE() {
+  if(!!window.ActiveXObject || "ActiveXObject" in window || navigator.userAgent.indexOf("Edge") > -1){
+    return true;
+  }else{
+    return false;
+　}
+}
+
 export function loadScript(src) {
   return new Promise((resolve, reject) => {
     let script = document.createElement('script');

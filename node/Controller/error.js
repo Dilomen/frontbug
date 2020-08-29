@@ -18,7 +18,7 @@ class ErrorController {
 
     saveErrorUseGet() {
         const userAgent = getDeviceInfo(this.ctx)
-        let data = JSON.parse(Object.keys(this.ctx.request.query)[0] || '{}')
+        let data = JSON.parse(this.ctx.request.query.error || '{}')
         data.userAgent = userAgent
         const result = new ErrorService(this.ctx).handleError(data)
         this.ctx.body = result ? { code: 200, msg: '上报成功' } : { msg: '上报失败' }

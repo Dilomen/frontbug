@@ -6,9 +6,9 @@
   <title>Document</title>
 </head>
 <body>
-  
+
 </body>
-<script src="../../iife/index.js">
+<script src="../../lib/es/index.iife.js">
 </script>
 <script>
 //   new Promise((resolve) => {
@@ -18,7 +18,13 @@
 // });
 // Promise.reject('data a');
 // console.log(aaaa);
-let a = 1
-a()
+// let a = 1
+// a()
+  var xml = new XMLHttpRequest()
+  xml.open('get', 'http://localhost:3090', false)
+  xml.onreadystatechange = function() {
+    console.log(xml.status, xml.readyState, 1111)
+  }
+  xml.send()
 </script>
 </html>

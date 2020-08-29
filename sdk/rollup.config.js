@@ -1,36 +1,51 @@
-// rollup.config.js
-const json = require('rollup-plugin-json');
-// rollup-plugin-node-resolve 插件可以告诉 Rollup 如何查找外部模块
-const resolve = require('rollup-plugin-node-resolve');
-const commonjs = require('rollup-plugin-commonjs');
-// 使用babel
-const babel = require('rollup-plugin-babel');
+import path from 'path'
+import babel from 'rollup-plugin-babel'
+import nodeResolve from '@rollup/plugin-node-resolve'
+import commonjs from 'rollup-plugin-commonjs'
+import pkg from './package.json'
 
+const extensions = ['.js', '.ts'];
+
+const resolve = function(...args) {
+  return path.resolve(__dirname, ...args);
+};
+
+// 打包任务的个性化配置
+const jobs = {
+  esm: {
+    output: {
+      format: 'esm',
+      file: resolve(pkg.module),
+      name: 'vangen'
+    },
+  },
+  umd: {
+    output: {
+      format: 'umd',
+      file: resolve(pkg.main),
+      name: 'vangen',
+    },
+  },
+  iife: {
+    output: {
+      format: 'iife',
+      file: resolve(pkg.module.replace(/(.\w+)$/, '.iife.js')),
+      name: 'vangen',
+    }
+  },
+};
+
+const outputConfig = jobs[process.env.FORMAT || 'esm'];
 module.exports = {
-  input: "./lib/index.js",
-  output: [{
-    name: 'index.js',
-    file: 'es/index.js',
-    format: 'es',
-    minify: true
-  }, {
-    name: 'index.js',
-    file: 'iife/index.js',
-    format: 'iife',
-    minify: true
-  }],
+  input: resolve('./src/index.js'),
+  ...outputConfig,
   plugins: [
-    resolve({
-      jsnext: true,
-      main: true,
-      browser: true
-    }),
+    nodeResolve(),
     commonjs(),
     babel({
-      runtimeHelpers: true,
       exclude: 'node_modules/**',
-      extensions: ['js', 'jsx']
+      extensions,
+      runtimeHelpers: true
     }),
-    json()]
-}
-
+  ],
+};

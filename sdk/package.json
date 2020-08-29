@@ -1,16 +1,35 @@
 {
-  "name": "vangen-sdk",
+  "name": "practice",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "lib/index.js",
+  "module": "lib/es/index.js",
   "license": "MIT",
   "scripts": {
-    "build": "NODE_ENV=production rollup -c"
+    "lint": "eslint 'src/**/*.{js,ts}'",
+    "dev": "rollup -w -c --environment FORMAT:iife",
+    "build:esm": "rollup -c --environment FORMAT:esm",
+    "build:umd": "rollup -c --environment FORMAT:umd",
+    "build:iife": "rollup -c --environment FORMAT:iife",
+    "build": "rimraf lib/* && run-p build:esm build:umd build:iife"
   },
   "devDependencies": {
-    "rollup": "^2.22.1",
+    "@babel/core": "^7.11.4",
+    "@babel/plugin-proposal-decorators": "^7.10.5",
+    "@babel/plugin-transform-runtime": "^7.11.0",
+    "@babel/preset-env": "^7.11.0",
+    "@babel/preset-typescript": "^7.10.4",
+    "@rollup/plugin-node-resolve": "^9.0.0",
+    "@typescript-eslint/eslint-plugin": "^3.10.1",
+    "@typescript-eslint/parser": "^3.10.1",
+    "eslint": "^7.7.0",
+    "npm-run-all": "^4.1.5",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.26.6",
     "rollup-plugin-babel": "^4.4.0",
     "rollup-plugin-commonjs": "^10.1.0",
-    "rollup-plugin-json": "^4.0.0",
-    "rollup-plugin-node-resolve": "^5.2.0"
+    "typescript": "^4.0.2"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.11.2"
   }
 }

@@ -881,6 +881,26 @@ function _asyncToGenerator(fn) {
 
 var asyncToGenerator = _asyncToGenerator;
 
+var _typeof_1 = createCommonjsModule(function (module) {
+function _typeof(obj) {
+  "@babel/helpers - typeof";
+
+  if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
+    module.exports = _typeof = function _typeof(obj) {
+      return typeof obj;
+    };
+  } else {
+    module.exports = _typeof = function _typeof(obj) {
+      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+    };
+  }
+
+  return _typeof(obj);
+}
+
+module.exports = _typeof;
+});
+
 function _arrayWithoutHoles(arr) {
   if (Array.isArray(arr)) return arrayLikeToArray(arr);
 }
@@ -1034,6 +1054,22 @@ var MyLoopQueue = /*#__PURE__*/function () {
 
   return MyLoopQueue;
 }();
+function isDiff(newValue, oldValue) {
+  var newKeyArr = Object.keys(newValue);
+  var oldKeyArr = Object.keys(oldValue);
+  if (newKeyArr.length !== oldKeyArr.length) return true;
+
+  for (var _i = 0, _newKeyArr = newKeyArr; _i < _newKeyArr.length; _i++) {
+    var key = _newKeyArr[_i];
+    if (_typeof_1(newValue[key]) === 'object' || _typeof_1(oldValue[key]) === 'object') continue;
+
+    if (newValue[key] !== oldValue[key]) {
+      return true;
+    }
+  }
+
+  return false;
+}
 
 var CONFIG_COUNT = 50;
 var MAX_COUNT = CONFIG_COUNT ;
@@ -1071,230 +1107,28 @@ function _getEventRecord() {
   return _getEventRecord.apply(this, arguments);
 }
 
-var stateType;
-
-(function (stateType) {
-  stateType[stateType["UNSENT"] = 0] = "UNSENT";
-  stateType[stateType["OPENED"] = 1] = "OPENED";
-  stateType[stateType["HEADERS_RECEIVED"] = 2] = "HEADERS_RECEIVED";
-  stateType[stateType["LOADING"] = 3] = "LOADING";
-  stateType[stateType["DONE"] = 4] = "DONE";
-})(stateType || (stateType = {}));
-
-var replaceFn = ['open', 'abort', 'send', 'setRequestHeader', 'onreadystatechange'];
-
-var AjaxProxy = /*#__PURE__*/function () {
-  function AjaxProxy() {
-    classCallCheck(this, AjaxProxy);
-
-    this._xmlProxy = function () {};
-
-    this._xmlRequest = new window.XMLHttpRequest();
-  }
-
-  createClass(AjaxProxy, [{
-    key: "initProxy",
-    value: function initProxy() {
-      for (var key in this._xmlRequest) {
-        if (!replaceFn.includes(key) && this._xmlRequest.hasOwnProperty(key)) {
-          this._xmlProxy[key] = this._xmlRequest[key];
-        }
-      }
-
-      this._xmlProxy.UNSENT = stateType.UNSENT;
-      this._xmlProxy.OPENED = stateType.OPENED;
-      this._xmlProxy.HEADERS_RECEIVED = stateType.HEADERS_RECEIVED;
-      this._xmlProxy.LOADING = stateType.LOADING;
-      this._xmlProxy.DONE = stateType.DONE;
-      this._xmlProxy.prototype.readyState = this._xmlProxy.UNSENT;
-      this._xmlProxy.prototype.responseText = '';
-      this._xmlProxy.prototype.responseXML = null;
-      this._xmlProxy.prototype.status = 0;
-      this._xmlProxy.prototype.statusText = '';
-      this._xmlProxy.prototype.priority = "NORMAL";
-      this._xmlProxy.prototype.onreadystatechange = null;
-      this._xmlProxy.onreadystatechange = null;
-      this._xmlProxy.onopen = null;
-      this._xmlProxy.onsend = null;
-      this._xmlProxy.onabort = null; // this._xmlProxy = Object.assign({}, this._xmlProxy, this)
-
-      this._xmlProxy.open = this.open;
-      this._xmlProxy.onreadystatechange = this.onreadystatechange;
-      return this._xmlProxy;
-    }
-  }, {
-    key: "open",
-    value: function open() {
-      var _this$_xmlRequest;
-
-      var nState = this._xmlProxy.readyState;
-
-      (_this$_xmlRequest = this._xmlRequest).open.apply(_this$_xmlRequest, arguments);
-
-      this._xmlProxy.readyState = stateType.OPENED;
-
-      this._xmlProxy.onreadystatechange = function () {
-        if (nState != this._xmlProxy.readyState) this.fReadyStateChange(this._xmlProxy);
-        nState = this._xmlProxy.readyState;
-      };
-    }
-  }, {
-    key: "fReadyStateChange",
-    value: function fReadyStateChange(oRequest) {
-      if (this._xmlProxy.onreadystatechange) this._xmlProxy.onreadystatechange.apply(oRequest);
-    }
-  }, {
-    key: "onreadystatechange",
-    value: function onreadystatechange() {
-      if (this._xmlProxy.readyState == 4 && !/2\d{2}/.test(this._xmlProxy.status)) {
-        console.log('error');
-      }
-
-      this._xmlRequest.onreadystatechange(this._xmlProxy);
-    }
-  }]);
-
-  return AjaxProxy;
-}();
-//     this._xmlProxy.UNSENT = stateType.UNSENT;
-//     this._xmlProxy.OPENED = stateType.OPENED;
-//     this._xmlProxy.HEADERS_RECEIVED = stateType.HEADERS_RECEIVED;
-//     this._xmlProxy.LOADING = stateType.LOADING;
-//     this._xmlProxy.DONE = stateType.DONE;
-//     this._xmlProxy.prototype.readyState = this._xmlProxy.UNSENT;
-//     this._xmlProxy.prototype.responseText = '';
-//     this._xmlProxy.prototype.responseXML = null;
-//     this._xmlProxy.prototype.status = 0;
-//     this._xmlProxy.prototype.statusText = '';
-//     this._xmlProxy.prototype.priority = "NORMAL";
-//     this._xmlProxy.prototype.onreadystatechange = null;
-//     this._xmlProxy.onreadystatechange = null;
-//     this._xmlProxy.onopen = null;
-//     this._xmlProxy.onsend = null;
-//     this._xmlProxy.onabort = null;
-//   }
-//
-//   overwrite():ProxyConfig {
-//     return {
-//       open(),
-//       abort(),
-//       send(),
-//       setRequestHeader(),
-//       onreadystatechange(),
-//       onload()
-//     }
-//   }
-//
-// //   (function () {
-// //     var oXMLHttpRequest = window.XMLHttpRequest;
-// //     function fXMLHttpRequest() {
-// //       this._object = new oXMLHttpRequest
-// //       this._listeners = [];
-// //     };
-//
-// //     // Constructor
-// //     function cXMLHttpRequest() {
-// //       return new fXMLHttpRequest;
-// //     };
-// //     cXMLHttpRequest.prototype = fXMLHttpRequest.prototype;
-//
-// //     // Constants
-// //     cXMLHttpRequest.UNSENT = 0;
-// //     cXMLHttpRequest.OPENED = 1;
-// //     cXMLHttpRequest.HEADERS_RECEIVED = 2;
-// //     cXMLHttpRequest.LOADING = 3;
-// //     cXMLHttpRequest.DONE = 4;
-//
-// //     // Public Properties
-// //     cXMLHttpRequest.prototype.readyState = cXMLHttpRequest.UNSENT;
-// //     cXMLHttpRequest.prototype.responseText = '';
-// //     cXMLHttpRequest.prototype.responseXML = null;
-// //     cXMLHttpRequest.prototype.status = 0;
-// //     cXMLHttpRequest.prototype.statusText = '';
-//
-// //     // Priority proposal
-// //     cXMLHttpRequest.prototype.priority = "NORMAL";
-//
-// //     // Instance-level Events Handlers
-// //     cXMLHttpRequest.prototype.onreadystatechange = null;
-//
-// //     // Class-level Events Handlers
-// //     cXMLHttpRequest.onreadystatechange = null;
-// //     cXMLHttpRequest.onopen = null;
-// //     cXMLHttpRequest.onsend = null;
-// //     cXMLHttpRequest.onabort = null;
-//
-// //     // Public Methods
-//     cXMLHttpRequest.prototype.open = function (...args) {
-//       var oRequest = this,
-//         nState = this.readyState,
-//         fOnUnload;
-//         this._object.open(...args)
-//       this.readyState = cXMLHttpRequest.OPENED;
-//       this._object.onreadystatechange = function () {
-//         oRequest.readyState = oRequest._object.readyState;
-//
-//         oRequest.responseText = oRequest._object.responseText;
-//         oRequest.responseXML = oRequest._object.responseXML;
-//         oRequest.status = oRequest._object.status;
-//         oRequest.statusText = oRequest._object.statusText;
-//
-//         // if (oRequest._aborted) {
-//         //   oRequest.readyState = cXMLHttpRequest.UNSENT;
-//         //   return;
-//         // }
-//         if (nState != oRequest.readyState)
-//           fReadyStateChange(oRequest);
-//
-//         nState = oRequest.readyState;
-//       }
-//     };
-//
-// //     function fXMLHttpRequest_send(oRequest) {
-// //       oRequest._object.send(oRequest._data);
-// //     };
-// //     cXMLHttpRequest.prototype.send = function (vData) {
-// //       this._object.send(vData)
-// //     };
-//
-// //     function fReadyStateChange(oRequest) {
-// //       if (cXMLHttpRequest.onreadystatechange)
-// //         cXMLHttpRequest.onreadystatechange.apply(oRequest);
-// //     };
-//
-// //     window.XMLHttpRequest = cXMLHttpRequest;
-// //   })();
-//
-// //   XMLHttpRequest.onreadystatechange = function () {
-// //     if (this.readyState == 4 && !(/2\d{2}/.test(this.status))) {
-// //       console.log('error')
-// //     }
-// //   }
-// // }
-
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
-XMLHttpRequest = new AjaxProxy().initProxy(); // 之后会设成可配置
 
-var BASE_URL = 'http://localhost:3090';
+var BASE_URL = "http://localhost:3090";
 var frontbugConfig = {
   isFramework: true,
   isNeedRecord: true
 };
 
 {
-  loadLink('https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.css');
-  loadScript('https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.js').then(function () {
+  loadLink("https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.css");
+  loadScript("https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.js").then(function () {
     initRecord();
   });
 }
 
 var URL_GROUP = {
-  error: BASE_URL + '/errorRequest',
-  performance: BASE_URL + '/performance'
+  error: BASE_URL + "/errorRequest",
+  performance: BASE_URL + "/performance"
 };
-var timer = null;
+var _preError = null;
 /**
  * 手动上报错误
  * @param {Object} err 错误对象
@@ -1304,6 +1138,7 @@ var timer = null;
 var reportError = /*#__PURE__*/function () {
   var _ref = asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee2(error) {
     var isFramework,
+        errorObjGroup,
         errorObj,
         eventsRecord,
         _args2 = arguments;
@@ -1312,37 +1147,53 @@ var reportError = /*#__PURE__*/function () {
         switch (_context2.prev = _context2.next) {
           case 0:
             isFramework = _args2.length > 1 && _args2[1] !== undefined ? _args2[1] : frontbugConfig.isFramework;
-            clearTimeout(timer);
-            errorObj = error.type === 'unhandledrejection' ? {
-              type: error.type,
-              msg: error.reason
-            } : handleError(error);
+            error.type = error.type || "default";
+            errorObjGroup = {
+              unhandledrejection: {
+                type: error.type,
+                msg: error.reason
+              },
+              network: handleNetwork(error),
+              "default": handleError(error)
+            };
+            errorObj = errorObjGroup[error.type]; // 对同一个错误不进行重复发送
 
-            _context2.next = 6;
-            return getEventRecord();
+            if (!(_preError && !isDiff(errorObj, _preError))) {
+              _context2.next = 8;
+              break;
+            }
 
-          case 6:
-            _context2.t0 = _context2.sent;
-            _context2.next = 10;
-            break;
+            return _context2.abrupt("return");
+
+          case 8:
+            _preError = errorObj;
 
           case 9:
+
+            _context2.next = 12;
+            return getEventRecord();
+
+          case 12:
+            _context2.t0 = _context2.sent;
+            _context2.next = 16;
+            break;
+
+          case 15:
             _context2.t0 = [];
 
-          case 10:
+          case 16:
             eventsRecord = _context2.t0;
             errorObj = _objectSpread(_objectSpread({}, errorObj), {}, {
-              error: error.stack,
               eventsRecord: eventsRecord,
               url: window.location.href,
               framework: isFramework
             });
-            timer = setTimeout( /*#__PURE__*/asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee() {
+            setTimeout( /*#__PURE__*/asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee() {
               return regenerator.wrap(function _callee$(_context) {
                 while (1) {
                   switch (_context.prev = _context.next) {
                     case 0:
-                      report(URL_GROUP['error'], errorObj);
+                      report(URL_GROUP["error"], errorObj);
 
                     case 1:
                     case "end":
@@ -1350,9 +1201,9 @@ var reportError = /*#__PURE__*/function () {
                   }
                 }
               }, _callee);
-            })));
+            })), 30);
 
-          case 13:
+          case 19:
           case "end":
             return _context2.stop();
         }
@@ -1369,16 +1220,16 @@ function report(reportUrl, dataObj) {
   var data = JSON.stringify(dataObj);
 
   if (window.navigator.sendBeacon) {
-    window.navigator.sendBeacon(reportUrl + 'FromBeacon', data); // IE的URL长度限制为2083，其余浏览器更大，支持最小且主流的Chrome长度限制为8182
+    window.navigator.sendBeacon(reportUrl + "FromBeacon", data); // IE的URL长度限制为2083，其余浏览器更大，支持最小且主流的Chrome长度限制为8182
   } else if (isIE() && encodeURIComponent(data).length < 2083 || !isIE() && encodeURIComponent(data).length < 8182) {
     var image = new Image();
-    image.src = reportUrl + '?error=' + encodeURIComponent(data);
+    image.src = reportUrl + "?error=" + encodeURIComponent(data);
   } else if (window.fetch) {
     fetch(reportUrl, {
       body: data,
-      method: 'POST',
+      method: "POST",
       headers: {
-        'content-type': 'application/json; charset=utf-8'
+        "content-type": "application/json; charset=utf-8"
       }
     });
   } else {
@@ -1391,24 +1242,24 @@ function report(reportUrl, dataObj) {
     } // XHR.withCredentials = true
 
 
-    XHR.open('POST', reportUrl, true);
-    XHR.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+    XHR.open("POST", reportUrl, true);
+    XHR.setRequestHeader("Content-Type", "application/json; charset=utf-8");
     XHR.send(data);
   }
 }
 
 function handleError(error) {
   var msg = error.message;
-  var errorStack = error.stack && error.stack.split('\n') || [];
+  var errorStack = error.stack && error.stack.split("\n") || [];
   var pattern = window.location.origin;
   var errorStackPosition = errorStack.find(function (errorItem) {
     return new RegExp(pattern).test(errorItem);
   });
 
   if (errorStackPosition) {
-    var index = errorStackPosition.lastIndexOf('/');
+    var index = errorStackPosition.lastIndexOf("/");
 
-    var _errorStackPosition$s = errorStackPosition.substr(index + 1).split(':'),
+    var _errorStackPosition$s = errorStackPosition.substr(index + 1).split(":"),
         _errorStackPosition$s2 = slicedToArray(_errorStackPosition$s, 3),
         path = _errorStackPosition$s2[0],
         lineNoStr = _errorStackPosition$s2[1],
@@ -1427,6 +1278,147 @@ function handleError(error) {
 
   return false;
 }
+
+function handleNetwork(error) {
+  var type = error.type,
+      status = error.status,
+      responseURL = error.responseURL,
+      statusText = error.statusText,
+      responseText = error.responseText,
+      headers = error.headers,
+      method = error.method;
+  return {
+    type: type,
+    status: status,
+    requestUrl: responseURL,
+    msg: statusText,
+    errorInfo: responseText,
+    headers: headers,
+    method: method
+  };
+}
+
+var oXMLHttpRequest = window.XMLHttpRequest;
+
+var XMLHttpRequestProxy = /*#__PURE__*/function () {
+  function XMLHttpRequestProxy() {
+    classCallCheck(this, XMLHttpRequestProxy);
+
+    this._xmlRequest = new oXMLHttpRequest();
+    this._headers = {};
+    this.method = "get";
+    this.readyState = 0;
+    this.type = "network";
+    this.status = 0;
+    this._coverAttr = {
+      open: this.open,
+      send: this.send,
+      setRequestHeader: this.setRequestHeader
+    };
+    this.initCover();
+  }
+
+  createClass(XMLHttpRequestProxy, [{
+    key: "initCover",
+    value: function initCover() {
+      var _this = this;
+
+      var _loop = function _loop(key) {
+        var isCoverAttr = _this._coverAttr.hasOwnProperty(key);
+
+        Object.defineProperty(_this, key, {
+          get: function get() {
+            return isCoverAttr ? _this._coverAttr[key] : _this._xmlRequest[key];
+          },
+          set: function set(newValue) {
+            if (key === "onreadystatechange") {
+              _this._xmlRequest[key] = newValue;
+            } else {
+              isCoverAttr ? _this._coverAttr[key] : _this._xmlRequest[key];
+            }
+          }
+        });
+      };
+
+      for (var key in this._xmlRequest) {
+        _loop(key);
+      }
+    }
+  }, {
+    key: "open",
+    value: function open(method, url) {
+      var _this$_xmlRequest;
+
+      this.method = method;
+
+      for (var _len = arguments.length, args = new Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+        args[_key - 2] = arguments[_key];
+      }
+
+      (_this$_xmlRequest = this._xmlRequest).open.apply(_this$_xmlRequest, [method, url].concat(args));
+    }
+  }, {
+    key: "send",
+    value: function send(data) {
+      if (!data) data = null;
+
+      this._xmlRequest.send(data);
+
+      if (this.readyState === 4 && !/2\d{2}/.test(this.status)) {
+        reportError(this, false);
+      }
+    }
+  }, {
+    key: "setRequestHeader",
+    value: function setRequestHeader(header, value) {
+      this._headers[header] = value;
+
+      this._xmlRequest.setRequestHeader(header, value);
+    }
+  }]);
+
+  return XMLHttpRequestProxy;
+}();
+
+function ownKeys$1(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread$1(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys$1(Object(source), true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys$1(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+var fetchProxy = window.fetch;
+
+var fetchRequestProxy = function fetchRequestProxy(url) {
+  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+  return fetchProxy(url, options).then(function (res) {
+    var status = res.status,
+        statusText = res.statusText,
+        url = res.url;
+
+    if (!/2\d{2}/.test(status)) {
+      var errorObj = {
+        status: status,
+        statusText: statusText,
+        type: "network",
+        url: url,
+        method: "get",
+        headers: {}
+      };
+
+      if (options) {
+        var headers = [];
+        options.headers.keys(function (key) {
+          headers[key] = options.headers.get(key);
+        });
+        errorObj = _objectSpread$1(_objectSpread$1({}, errorObj), {}, {
+          method: options.method,
+          headers: headers
+        });
+      }
+
+      reportError(errorObj);
+    }
+  });
+};
+
+window.fetch = fetchRequestProxy;
 
 var setPrototypeOf = createCommonjsModule(function (module) {
 function _setPrototypeOf(o, p) {
@@ -1457,26 +1449,6 @@ function _inherits(subClass, superClass) {
 }
 
 var inherits = _inherits;
-
-var _typeof_1 = createCommonjsModule(function (module) {
-function _typeof(obj) {
-  "@babel/helpers - typeof";
-
-  if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-    module.exports = _typeof = function _typeof(obj) {
-      return typeof obj;
-    };
-  } else {
-    module.exports = _typeof = function _typeof(obj) {
-      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-    };
-  }
-
-  return _typeof(obj);
-}
-
-module.exports = _typeof;
-});
 
 function _assertThisInitialized(self) {
   if (self === void 0) {
@@ -1603,6 +1575,7 @@ function ErrorRequest(React) {
   return Error;
 }
 
+XMLHttpRequest = XMLHttpRequestProxy;
 var index = {
   install: install
 };

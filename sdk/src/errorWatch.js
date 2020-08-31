@@ -31,17 +31,17 @@ import { reportError } from './report'
 //   return () => oldReject.apply(Promise, arguments)
 // }
 
-// window.onerror = function(msg, path, lineNo, columnNo, error) {
-//   const errorObj = {
-//     msg,
-//     path,
-//     lineNo,
-//     columnNo,
-//     error,
-//     framework: '',
-//   };
-//   report(errorObj)
-// };
+window.onerror = function(msg, path, lineNo, columnNo, error) {
+  const errorObj = {
+    msg,
+    path,
+    lineNo,
+    columnNo,
+    error,
+    framework: '',
+  };
+  report(errorObj)
+};
 
 window.addEventListener(
   'error',

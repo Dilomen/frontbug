@@ -1,5 +1,5 @@
 import { initRecord } from "./record";
-import { loadScript, loadLink, isIE } from "./utils";
+import { loadScript, loadLink, isIE, isDiff } from "./utils";
 import { getEventRecord } from "./record";
 
 // 之后会设成可配置
@@ -23,8 +23,7 @@ const URL_GROUP = {
   performance: BASE_URL + "/performance"
 };
 
-let timer = null;
-
+let _preError = null;
 /**
  * 手动上报错误
  * @param {Object} err 错误对象
@@ -34,7 +33,6 @@ export const reportError = async (
   error,
   isFramework = frontbugConfig.isFramework
 ) => {
-  clearTimeout(timer);
   error.type = error.type || "default";
   let errorObjGroup = {
     unhandledrejection: { type: error.type, msg: error.reason },
@@ -42,6 +40,12 @@ export const reportError = async (
     default: handleError(error)
   };
   let errorObj = errorObjGroup[error.type];
+  // 对同一个错误不进行重复发送
+  if (_preError && !isDiff(errorObj, _preError)) {
+    return;
+  } else {
+    _preError = errorObj;
+  }
   const eventsRecord = frontbugConfig.isNeedRecord
     ? await getEventRecord()
     : [];
@@ -51,9 +55,9 @@ export const reportError = async (
     url: window.location.href,
     framework: isFramework
   };
-  timer = setTimeout(async () => {
+  setTimeout(async () => {
     report(URL_GROUP["error"], errorObj);
-  });
+  }, 30);
 };
 
 function report(reportUrl, dataObj) {
@@ -109,12 +113,22 @@ function handleError(error) {
 }
 
 function handleNetwork(error) {
-  const { type, status, responseURL, statusText, responseText } = error;
+  const {
+    type,
+    status,
+    responseURL,
+    statusText,
+    responseText,
+    headers,
+    method
+  } = error;
   return {
     type,
     status,
     requestUrl: responseURL,
     msg: statusText,
-    errorInfo: responseText
+    errorInfo: responseText,
+    headers,
+    method
   };
 }

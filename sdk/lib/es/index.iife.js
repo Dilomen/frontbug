@@ -882,6 +882,26 @@ var vangen = (function (exports) {
 
   var asyncToGenerator = _asyncToGenerator;
 
+  var _typeof_1 = createCommonjsModule(function (module) {
+  function _typeof(obj) {
+    "@babel/helpers - typeof";
+
+    if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
+      module.exports = _typeof = function _typeof(obj) {
+        return typeof obj;
+      };
+    } else {
+      module.exports = _typeof = function _typeof(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+      };
+    }
+
+    return _typeof(obj);
+  }
+
+  module.exports = _typeof;
+  });
+
   function _arrayWithoutHoles(arr) {
     if (Array.isArray(arr)) return arrayLikeToArray(arr);
   }
@@ -1035,6 +1055,22 @@ var vangen = (function (exports) {
 
     return MyLoopQueue;
   }();
+  function isDiff(newValue, oldValue) {
+    var newKeyArr = Object.keys(newValue);
+    var oldKeyArr = Object.keys(oldValue);
+    if (newKeyArr.length !== oldKeyArr.length) return true;
+
+    for (var _i = 0, _newKeyArr = newKeyArr; _i < _newKeyArr.length; _i++) {
+      var key = _newKeyArr[_i];
+      if (_typeof_1(newValue[key]) === 'object' || _typeof_1(oldValue[key]) === 'object') continue;
+
+      if (newValue[key] !== oldValue[key]) {
+        return true;
+      }
+    }
+
+    return false;
+  }
 
   var CONFIG_COUNT = 50;
   var MAX_COUNT = CONFIG_COUNT ;
@@ -1093,7 +1129,7 @@ var vangen = (function (exports) {
     error: BASE_URL + "/errorRequest",
     performance: BASE_URL + "/performance"
   };
-  var timer = null;
+  var _preError = null;
   /**
    * 手动上报错误
    * @param {Object} err 错误对象
@@ -1112,7 +1148,6 @@ var vangen = (function (exports) {
           switch (_context2.prev = _context2.next) {
             case 0:
               isFramework = _args2.length > 1 && _args2[1] !== undefined ? _args2[1] : frontbugConfig.isFramework;
-              clearTimeout(timer);
               error.type = error.type || "default";
               errorObjGroup = {
                 unhandledrejection: {
@@ -1122,32 +1157,44 @@ var vangen = (function (exports) {
                 network: handleNetwork(error),
                 "default": handleError(error)
               };
-              errorObj = errorObjGroup[error.type];
+              errorObj = errorObjGroup[error.type]; // 对同一个错误不进行重复发送
 
-              _context2.next = 8;
-              return getEventRecord();
+              if (!(_preError && !isDiff(errorObj, _preError))) {
+                _context2.next = 8;
+                break;
+              }
+
+              return _context2.abrupt("return");
 
             case 8:
-              _context2.t0 = _context2.sent;
-              _context2.next = 12;
-              break;
+              _preError = errorObj;
 
-            case 11:
-              _context2.t0 = [];
+            case 9:
+
+              _context2.next = 12;
+              return getEventRecord();
 
             case 12:
+              _context2.t0 = _context2.sent;
+              _context2.next = 16;
+              break;
+
+            case 15:
+              _context2.t0 = [];
+
+            case 16:
               eventsRecord = _context2.t0;
               errorObj = _objectSpread(_objectSpread({}, errorObj), {}, {
                 eventsRecord: eventsRecord,
                 url: window.location.href,
                 framework: isFramework
               });
-              timer = setTimeout( /*#__PURE__*/asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee() {
+              setTimeout( /*#__PURE__*/asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee() {
                 return regenerator.wrap(function _callee$(_context) {
                   while (1) {
                     switch (_context.prev = _context.next) {
                       case 0:
-                        report(URL_GROUP["error"], errorObj);
+                        report$1(URL_GROUP["error"], errorObj);
 
                       case 1:
                       case "end":
@@ -1155,9 +1202,9 @@ var vangen = (function (exports) {
                     }
                   }
                 }, _callee);
-              })));
+              })), 30);
 
-            case 15:
+            case 19:
             case "end":
               return _context2.stop();
           }
@@ -1170,7 +1217,7 @@ var vangen = (function (exports) {
     };
   }();
 
-  function report(reportUrl, dataObj) {
+  function report$1(reportUrl, dataObj) {
     var data = JSON.stringify(dataObj);
 
     if (window.navigator.sendBeacon) {
@@ -1238,119 +1285,141 @@ var vangen = (function (exports) {
         status = error.status,
         responseURL = error.responseURL,
         statusText = error.statusText,
-        responseText = error.responseText;
+        responseText = error.responseText,
+        headers = error.headers,
+        method = error.method;
     return {
       type: type,
       status: status,
       requestUrl: responseURL,
       msg: statusText,
-      errorInfo: responseText
+      errorInfo: responseText,
+      headers: headers,
+      method: method
     };
   }
 
-  var stateType;
+  var oXMLHttpRequest = window.XMLHttpRequest;
 
-  (function (stateType) {
-    stateType[stateType["UNSENT"] = 0] = "UNSENT";
-    stateType[stateType["OPENED"] = 1] = "OPENED";
-    stateType[stateType["HEADERS_RECEIVED"] = 2] = "HEADERS_RECEIVED";
-    stateType[stateType["LOADING"] = 3] = "LOADING";
-    stateType[stateType["DONE"] = 4] = "DONE";
-  })(stateType || (stateType = {}));
+  var XMLHttpRequestProxy = /*#__PURE__*/function () {
+    function XMLHttpRequestProxy() {
+      classCallCheck(this, XMLHttpRequestProxy);
 
-  var _xmlRequest = new XMLHttpRequest();
-
-  function XMLHttpRequestProxy() {
-    this.UNSENT = stateType.UNSENT;
-    this.OPENED = stateType.OPENED;
-    this.HEADERS_RECEIVED = stateType.HEADERS_RECEIVED;
-    this.LOADING = stateType.LOADING;
-    this.DONE = stateType.DONE;
-    this.onreadystatechange = null;
-    this.onopen = null;
-    this.onsend = null;
-    this.onabort = null;
-  }
-
-  XMLHttpRequestProxy.prototype.readyState = 0;
-  XMLHttpRequestProxy.prototype.responseText = "";
-  XMLHttpRequestProxy.prototype.responseXML = null;
-  XMLHttpRequestProxy.prototype.status = 0;
-  XMLHttpRequestProxy.prototype.statusText = "";
-  XMLHttpRequestProxy.prototype.priority = "NORMAL";
-  XMLHttpRequestProxy.prototype.onreadystatechange = null;
-
-  XMLHttpRequestProxy.prototype.open = function () {
-    var _self = this;
-
-    var nState = this.readyState;
-
-    _xmlRequest.open.apply(_xmlRequest, arguments);
-
-    this.readyState = this.OPENED;
-    this.fReadyStateChange(this);
-
-    _xmlRequest.onreadystatechange = function () {
-      _self.fSynchronizeValues(_self);
-
-      if (nState != _self.readyState) _self.fReadyStateChange(_self);
-
-      if (this.readyState == 4 && !/2\d{2}/.test(this.status)) {
-        this.type = "network";
-        reportError(this, false);
-      }
-
-      nState = _self.readyState;
-    };
-  };
-
-  XMLHttpRequestProxy.prototype.send = function (vData) {
-    if (this.onsend) this.onsend.apply(this, arguments);
-    if (!arguments.length) vData = null;
-
-    _xmlRequest.send(vData);
-
-    this.fSynchronizeValues(this);
-
-    while (this.readyState < this.DONE) {
-      this.readyState++;
-      this.fReadyStateChange(this);
+      this._xmlRequest = new oXMLHttpRequest();
+      this._headers = {};
+      this.method = "get";
+      this.readyState = 0;
+      this.type = "network";
+      this.status = 0;
+      this._coverAttr = {
+        open: this.open,
+        send: this.send,
+        setRequestHeader: this.setRequestHeader
+      };
+      this.initCover();
     }
-  };
 
-  XMLHttpRequestProxy.prototype.fReadyStateChange = function (oRequest) {
-    if (this.onreadystatechange) this.onreadystatechange.apply(oRequest);
-    oRequest.dispatchEvent({
-      type: "readystatechange",
-      bubbles: false,
-      cancelable: false,
-      timeStamp: +new Date()
+    createClass(XMLHttpRequestProxy, [{
+      key: "initCover",
+      value: function initCover() {
+        var _this = this;
+
+        var _loop = function _loop(key) {
+          var isCoverAttr = _this._coverAttr.hasOwnProperty(key);
+
+          Object.defineProperty(_this, key, {
+            get: function get() {
+              return isCoverAttr ? _this._coverAttr[key] : _this._xmlRequest[key];
+            },
+            set: function set(newValue) {
+              if (key === "onreadystatechange") {
+                _this._xmlRequest[key] = newValue;
+              } else {
+                isCoverAttr ? _this._coverAttr[key] : _this._xmlRequest[key];
+              }
+            }
+          });
+        };
+
+        for (var key in this._xmlRequest) {
+          _loop(key);
+        }
+      }
+    }, {
+      key: "open",
+      value: function open(method, url) {
+        var _this$_xmlRequest;
+
+        this.method = method;
+
+        for (var _len = arguments.length, args = new Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+          args[_key - 2] = arguments[_key];
+        }
+
+        (_this$_xmlRequest = this._xmlRequest).open.apply(_this$_xmlRequest, [method, url].concat(args));
+      }
+    }, {
+      key: "send",
+      value: function send(data) {
+        if (!data) data = null;
+
+        this._xmlRequest.send(data);
+
+        if (this.readyState === 4 && !/2\d{2}/.test(this.status)) {
+          reportError(this, false);
+        }
+      }
+    }, {
+      key: "setRequestHeader",
+      value: function setRequestHeader(header, value) {
+        this._headers[header] = value;
+
+        this._xmlRequest.setRequestHeader(header, value);
+      }
+    }]);
+
+    return XMLHttpRequestProxy;
+  }();
+
+  function ownKeys$1(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+  function _objectSpread$1(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys$1(Object(source), true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys$1(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+  var fetchProxy = window.fetch;
+
+  var fetchRequestProxy = function fetchRequestProxy(url) {
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    return fetchProxy(url, options).then(function (res) {
+      var status = res.status,
+          statusText = res.statusText,
+          url = res.url;
+
+      if (!/2\d{2}/.test(status)) {
+        var errorObj = {
+          status: status,
+          statusText: statusText,
+          type: "network",
+          url: url,
+          method: "get",
+          headers: {}
+        };
+
+        if (options) {
+          var headers = [];
+          options.headers.keys(function (key) {
+            headers[key] = options.headers.get(key);
+          });
+          errorObj = _objectSpread$1(_objectSpread$1({}, errorObj), {}, {
+            method: options.method,
+            headers: headers
+          });
+        }
+
+        reportError(errorObj);
+      }
     });
   };
 
-  XMLHttpRequestProxy.prototype.fSynchronizeValues = function (oRequest) {
-    oRequest.readyState = _xmlRequest.readyState;
-    oRequest.responseText = _xmlRequest.responseText;
-    oRequest.responseXML = _xmlRequest.responseXML;
-    oRequest.status = _xmlRequest.status;
-    oRequest.statusText = _xmlRequest.statusText;
-  };
-
-  XMLHttpRequestProxy.prototype.dispatchEvent = function (oEvent) {
-    var oEventPseudo = {
-      type: oEvent.type,
-      target: this,
-      currentTarget: this,
-      eventPhase: 2,
-      bubbles: oEvent.bubbles,
-      cancelable: oEvent.cancelable,
-      timeStamp: oEvent.timeStamp,
-      stopPropagation: function stopPropagation() {},
-      preventDefault: function preventDefault() {},
-      initEvent: function initEvent() {}
-    };
-    if (oEventPseudo.type == "readystatechange" && this.onreadystatechange) (this.onreadystatechange.handleEvent || this.onreadystatechange).apply(this, [oEventPseudo]);
-  };
+  window.fetch = fetchRequestProxy;
 
   var setPrototypeOf = createCommonjsModule(function (module) {
   function _setPrototypeOf(o, p) {
@@ -1381,26 +1450,6 @@ var vangen = (function (exports) {
   }
 
   var inherits = _inherits;
-
-  var _typeof_1 = createCommonjsModule(function (module) {
-  function _typeof(obj) {
-    "@babel/helpers - typeof";
-
-    if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      module.exports = _typeof = function _typeof(obj) {
-        return typeof obj;
-      };
-    } else {
-      module.exports = _typeof = function _typeof(obj) {
-        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-      };
-    }
-
-    return _typeof(obj);
-  }
-
-  module.exports = _typeof;
-  });
 
   function _assertThisInitialized(self) {
     if (self === void 0) {
@@ -1465,17 +1514,18 @@ var vangen = (function (exports) {
   //   }
   //   return () => oldReject.apply(Promise, arguments)
   // }
-  // window.onerror = function(msg, path, lineNo, columnNo, error) {
-  //   const errorObj = {
-  //     msg,
-  //     path,
-  //     lineNo,
-  //     columnNo,
-  //     error,
-  //     framework: '',
-  //   };
-  //   report(errorObj)
-  // };
+
+  window.onerror = function (msg, path, lineNo, columnNo, error) {
+    var errorObj = {
+      msg: msg,
+      path: path,
+      lineNo: lineNo,
+      columnNo: columnNo,
+      error: error,
+      framework: ''
+    };
+    report(errorObj);
+  };
 
   window.addEventListener('error', function (event) {
     reportError(event.error, false);

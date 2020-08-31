@@ -16,9 +16,14 @@ class ErrorService {
       framework = '',
       userAgent = {},
       eventsRecord = [],
+      // network部分
+      errorInfo = '',
+      requestUrl = '',
+      status = '',
+      type = ''
     } = data;
     const happenTime = dayjs().format('YYYY-MM-DD HH:mm:ss');
-    let errorData = { msg, happenTime, userAgent, url, eventsRecord, error };
+    let errorData = { msg, happenTime, userAgent, url, eventsRecord, error, errorInfo, requestUrl, status, type };
     if (framework) {
         const sourceData = await loopSourceMap(path + '.map', lineNo, columnNo)
         const { sourcesContent, line, source, column } = sourceData;
@@ -31,6 +36,7 @@ class ErrorService {
         line: lineNo,
         source: path,
       };
+      console.log(errorData)
     }
     return true;
   }

@@ -6,7 +6,7 @@
   <title>Document</title>
 </head>
 <body>
-
+<button onclick="handle()">a</button><button onclick="handle1()">b</button>
 </body>
 <script src="../../lib/es/index.iife.js">
 </script>
@@ -20,11 +20,20 @@
 // console.log(aaaa);
 // let a = 1
 // a()
+
+// function handle() {
+//   console.log(a)
+// }
+// function handle1() {
+//   console.log(b)
+// }
   var xml = new XMLHttpRequest()
-  xml.open('get', 'http://localhost:3090', false)
+  xml.open('get', '/111', false)
   xml.onreadystatechange = function() {
     console.log(xml.status, xml.readyState, 1111)
   }
+  xml.setRequestHeader('Content-Type', 'text/html')
   xml.send()
+  // window.fetch('/asd?a=2')
 </script>
 </html>

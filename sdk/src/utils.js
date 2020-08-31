@@ -107,3 +107,17 @@ export class LoopQueue {
     return this.Queue;
   }
 }
+
+
+export function isDiff(newValue, oldValue) {
+  let newKeyArr = Object.keys(newValue);
+  let oldKeyArr = Object.keys(oldValue);
+  if (newKeyArr.length !== oldKeyArr.length) return true
+  for (let key of newKeyArr) {
+    if (typeof newValue[key] === 'object' || typeof oldValue[key] === 'object') continue
+    if (newValue[key] !== oldValue[key]) {
+      return true
+    }
+  }
+  return false
+}

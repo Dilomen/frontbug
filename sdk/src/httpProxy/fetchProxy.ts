@@ -1,21 +1,12 @@
-import { reportError } from "../report";
-
-type errorObjConfig = {
-  status: number | string;
-  statusText: string;
-  type: string;
-  url: string;
-  options?: object;
-  method?: string;
-  headers?: object;
-};
+import { reportNetworkError } from "./handleError";
+import { NetworkError, VangenConfig } from "../interface";
 
 const fetchProxy = window.fetch;
-const fetchRequestProxy = (url: string, options: any = null) =>
+const fetchRequestProxy: any = (url: string, options: any = null) =>
   fetchProxy(url, options).then((res: any) => {
     const { status, statusText, url } = res;
     if (!/2\d{2}/.test(status)) {
-      let errorObj: errorObjConfig = {
+      let errorObj: NetworkError = {
         status,
         statusText,
         type: "network",
@@ -34,7 +25,12 @@ const fetchRequestProxy = (url: string, options: any = null) =>
           headers
         };
       }
-      reportError(errorObj);
+      reportNetworkError(errorObj, fetchRequestProxy._config);
     }
   });
-window.fetch = fetchRequestProxy;
+
+function createFetchRequest(config: VangenConfig) {
+  fetchRequestProxy._config = config;
+  return fetchRequestProxy
+}
+export default createFetchRequest;

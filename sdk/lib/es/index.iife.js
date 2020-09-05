@@ -1,5 +1,463 @@
-var vangen = (function (exports) {
+var vangen = (function () {
   'use strict';
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var classCallCheck = _classCallCheck;
+
+  function _defineProperties(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties(Constructor, staticProps);
+    return Constructor;
+  }
+
+  var createClass = _createClass;
+
+  function _defineProperty(obj, key, value) {
+    if (key in obj) {
+      Object.defineProperty(obj, key, {
+        value: value,
+        enumerable: true,
+        configurable: true,
+        writable: true
+      });
+    } else {
+      obj[key] = value;
+    }
+
+    return obj;
+  }
+
+  var defineProperty = _defineProperty;
+
+  function createCommonjsModule(fn, basedir, module) {
+  	return module = {
+  	  path: basedir,
+  	  exports: {},
+  	  require: function (path, base) {
+        return commonjsRequire(path, (base === undefined || base === null) ? module.path : base);
+      }
+  	}, fn(module, module.exports), module.exports;
+  }
+
+  function commonjsRequire () {
+  	throw new Error('Dynamic requires are not currently supported by @rollup/plugin-commonjs');
+  }
+
+  var _typeof_1 = createCommonjsModule(function (module) {
+  function _typeof(obj) {
+    "@babel/helpers - typeof";
+
+    if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
+      module.exports = _typeof = function _typeof(obj) {
+        return typeof obj;
+      };
+    } else {
+      module.exports = _typeof = function _typeof(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+      };
+    }
+
+    return _typeof(obj);
+  }
+
+  module.exports = _typeof;
+  });
+
+  function _arrayLikeToArray(arr, len) {
+    if (len == null || len > arr.length) len = arr.length;
+
+    for (var i = 0, arr2 = new Array(len); i < len; i++) {
+      arr2[i] = arr[i];
+    }
+
+    return arr2;
+  }
+
+  var arrayLikeToArray = _arrayLikeToArray;
+
+  function _arrayWithoutHoles(arr) {
+    if (Array.isArray(arr)) return arrayLikeToArray(arr);
+  }
+
+  var arrayWithoutHoles = _arrayWithoutHoles;
+
+  function _iterableToArray(iter) {
+    if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter);
+  }
+
+  var iterableToArray = _iterableToArray;
+
+  function _unsupportedIterableToArray(o, minLen) {
+    if (!o) return;
+    if (typeof o === "string") return arrayLikeToArray(o, minLen);
+    var n = Object.prototype.toString.call(o).slice(8, -1);
+    if (n === "Object" && o.constructor) n = o.constructor.name;
+    if (n === "Map" || n === "Set") return Array.from(o);
+    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return arrayLikeToArray(o, minLen);
+  }
+
+  var unsupportedIterableToArray = _unsupportedIterableToArray;
+
+  function _nonIterableSpread() {
+    throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+  }
+
+  var nonIterableSpread = _nonIterableSpread;
+
+  function _toConsumableArray(arr) {
+    return arrayWithoutHoles(arr) || iterableToArray(arr) || unsupportedIterableToArray(arr) || nonIterableSpread();
+  }
+
+  var toConsumableArray = _toConsumableArray;
+
+  function isIE() {
+    if (!!window.ActiveXObject || "ActiveXObject" in window || navigator.userAgent.indexOf("Edge") > -1) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+  function loadScript(src) {
+    return new Promise(function (resolve, reject) {
+      var script = document.createElement('script');
+      script.async = true;
+      script.src = src;
+      script.onload = resolve;
+
+      script.onerror = function (error) {
+        return reject(new Error('Unable to load ' + src + ': ' + error));
+      };
+
+      document.body.appendChild(script);
+    });
+  }
+  function loadLink(href) {
+    return new Promise(function (resolve, reject) {
+      var link = document.createElement('link');
+      link.href = href;
+      link.rel = 'stylesheet';
+      link.onload = resolve;
+
+      link.onerror = function (error) {
+        return reject(new Error('Unable to load ' + href + ': ' + error));
+      };
+
+      document.body.appendChild(link);
+    });
+  }
+  var MyLoopQueue = /*#__PURE__*/function () {
+    function MyLoopQueue() {
+      var capacity = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
+
+      classCallCheck(this, MyLoopQueue);
+
+      this.front = 0;
+      this.tail = 0;
+      this.size = 0;
+      this.Queue = new Array(capacity);
+    }
+
+    createClass(MyLoopQueue, [{
+      key: "getSize",
+      value: function getSize() {
+        return this.size;
+      }
+    }, {
+      key: "enqueue",
+      value: function enqueue(E) {
+        var queueLength = this.Queue.length;
+        var tail = this.tail % queueLength; // 如果队列满了，那么就将"第一位"变成"最后一位"
+
+        if (this.tail === this.front && this.getSize() !== 0) {
+          this.front = (this.front + 1) % queueLength;
+        }
+
+        this.tail = (this.tail + 1) % queueLength;
+        this.Queue[tail] = E;
+        this.size++;
+      }
+    }, {
+      key: "dequeue",
+      value: function dequeue() {
+        var queueLength = this.Queue.length; // 如果队列为空，就不能出列了
+
+        if (this.getSize() === 0 && this.front % queueLength === this.tail) {
+          throw new Error("Can't get empty queue");
+        }
+
+        var ret = this.Queue[this.front];
+        this.Queue[this.front] = null;
+        this.front = (this.front + 1) % queueLength;
+        this.size--;
+        return ret;
+      }
+    }, {
+      key: "getQueue",
+      value: function getQueue() {
+        var newQueue = [];
+        var length = this.Queue.length;
+
+        if (this.getSize() < length) {
+          newQueue = this.Queue.slice(0, this.tail);
+        } else if (this.font === 0) {
+          newQueue = this.Queue;
+        } else {
+          var frontQueue = this.Queue.slice(this.front);
+          var tailQueue = this.Queue.slice(0, this.front);
+          newQueue = [].concat(toConsumableArray(frontQueue), toConsumableArray(tailQueue));
+        }
+
+        return newQueue;
+      }
+    }]);
+
+    return MyLoopQueue;
+  }();
+  function isDiff(newValue, oldValue) {
+    var newKeyArr = Object.keys(newValue);
+    var oldKeyArr = Object.keys(oldValue);
+    if (newKeyArr.length !== oldKeyArr.length) return true;
+
+    for (var _i = 0, _newKeyArr = newKeyArr; _i < _newKeyArr.length; _i++) {
+      var key = _newKeyArr[_i];
+      if (_typeof_1(newValue[key]) === 'object' || _typeof_1(oldValue[key]) === 'object') continue;
+
+      if (newValue[key] !== oldValue[key]) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  var _preError = null;
+
+  function report(reportUrl, dataObj) {
+    // 对同一个错误不进行重复发送
+    if (_preError && !isDiff(dataObj, _preError)) {
+      return;
+    } else {
+      _preError = dataObj;
+    }
+
+    var data = JSON.stringify(dataObj);
+
+    if (window.navigator.sendBeacon) {
+      window.navigator.sendBeacon(reportUrl + "FromBeacon", data); // IE的URL长度限制为2083，其余浏览器更大，支持最小且主流的Chrome长度限制为8182
+    } else if (isIE() && encodeURIComponent(data).length < 2083 || !isIE() && encodeURIComponent(data).length < 8182) {
+      var image = new Image();
+      image.src = reportUrl + "?error=" + encodeURIComponent(data);
+    } else if (window.fetch) {
+      fetch(reportUrl, {
+        body: data,
+        method: "POST",
+        headers: {
+          "content-type": "application/json; charset=utf-8"
+        }
+      });
+    } else {
+      var XHR = null;
+
+      if (window.XMLHttpRequest) {
+        XHR = new window.XMLHttpRequest();
+      } else if (window.ActiveXObject) {
+        XHR = new window.ActiveXObject("vangen");
+      } // XHR.withCredentials = true
+
+
+      XHR.open("POST", reportUrl, true);
+      XHR.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+      XHR.send(data);
+    }
+  }
+
+  function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+  function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+  function reportNetworkError(error, options) {
+    var errorObj = handleNetwork(error);
+    errorObj = _objectSpread(_objectSpread({}, errorObj), {}, {
+      url: window.location.href,
+      framework: options.isFramework || false
+    });
+    report(options.BASE_URL + "/errorRequest", errorObj);
+  }
+
+  function handleNetwork(error) {
+    var type = error.type,
+        status = error.status,
+        responseURL = error.responseURL,
+        statusText = error.statusText,
+        responseText = error.responseText,
+        headers = error.headers,
+        method = error.method;
+    return {
+      type: type,
+      status: status,
+      requestUrl: responseURL,
+      message: statusText,
+      errorInfo: responseText,
+      headers: headers,
+      method: method
+    };
+  }
+
+  var assignmentsFn = ["onload", "onreadystatechange", "onloadstart", "onloadend", "onprogress", "onerror", "onabort"];
+  var oXMLHttpRequest = window.XMLHttpRequest;
+
+  var XMLHttpRequestProxy = /*#__PURE__*/function () {
+    function XMLHttpRequestProxy() {
+      classCallCheck(this, XMLHttpRequestProxy);
+
+      this._xmlRequest = new oXMLHttpRequest();
+      this._headers = {};
+      this.method = "get";
+      this.readyState = 0;
+      this.type = "network";
+      this.status = 0;
+      this._coverAttr = {
+        open: this.open,
+        send: this.send,
+        setRequestHeader: this.setRequestHeader
+      };
+      this.initCover();
+    }
+
+    createClass(XMLHttpRequestProxy, [{
+      key: "initCover",
+      value: function initCover() {
+        var _this = this;
+
+        var _loop = function _loop(key) {
+          var isCoverAttr = _this._coverAttr.hasOwnProperty(key);
+
+          Object.defineProperty(_this, key, {
+            get: function get() {
+              return isCoverAttr ? _this._coverAttr[key] : _this._xmlRequest[key];
+            },
+            set: function set(newValue) {
+              if (assignmentsFn.includes(key)) {
+                _this._xmlRequest[key] = newValue;
+              } else {
+                isCoverAttr ? _this._coverAttr[key] : _this._xmlRequest[key];
+              }
+            }
+          });
+        };
+
+        for (var key in this._xmlRequest) {
+          _loop(key);
+        }
+      }
+    }, {
+      key: "open",
+      value: function open(method, url) {
+        var _this$_xmlRequest;
+
+        this.method = method;
+
+        for (var _len = arguments.length, args = new Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+          args[_key - 2] = arguments[_key];
+        }
+
+        (_this$_xmlRequest = this._xmlRequest).open.apply(_this$_xmlRequest, [method, url].concat(args));
+      }
+    }, {
+      key: "send",
+      value: function send(data) {
+        if (!data) data = null;
+
+        this._xmlRequest.send(data);
+
+        if (this.readyState === 4 && !/2\d{2}/.test(this.status)) {
+          reportNetworkError(this, XMLHttpRequestProxy._options);
+        }
+      }
+    }, {
+      key: "setRequestHeader",
+      value: function setRequestHeader(header, value) {
+        this._headers[header] = value;
+
+        this._xmlRequest.setRequestHeader(header, value);
+      }
+    }]);
+
+    return XMLHttpRequestProxy;
+  }();
+
+  Object.defineProperty(XMLHttpRequestProxy, "_options", {
+    enumerable: true,
+    writable: true,
+    value: undefined
+  });
+  window.XMLHttpRequest = XMLHttpRequestProxy;
+
+  function initXMLHttpRequest(options) {
+    XMLHttpRequestProxy._options = options;
+  }
+
+  function ownKeys$1(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+  function _objectSpread$1(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys$1(Object(source), true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys$1(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+  var fetchProxy = window.fetch;
+
+  var fetchRequestProxy = function fetchRequestProxy(url) {
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    return fetchProxy(url, options).then(function (res) {
+      var status = res.status,
+          statusText = res.statusText,
+          url = res.url;
+
+      if (!/2\d{2}/.test(status)) {
+        var errorObj = {
+          status: status,
+          statusText: statusText,
+          type: "network",
+          url: url,
+          method: "get",
+          headers: {}
+        };
+
+        if (options) {
+          var headers = {};
+          options.headers.keys(function (key) {
+            headers[key] = options.headers.get(key);
+          });
+          errorObj = _objectSpread$1(_objectSpread$1({}, errorObj), {}, {
+            method: options.method,
+            headers: headers
+          });
+        }
+
+        reportNetworkError(errorObj, fetchRequestProxy._config);
+      }
+    });
+  };
+
+  function createFetchRequest(config) {
+    fetchRequestProxy._config = config;
+    return fetchRequestProxy;
+  }
+
+  function initHttpProxy(options) {
+    window.XMLHttpRequest = initXMLHttpRequest(options);
+    window.fetch = createFetchRequest(options);
+  }
 
   function _arrayWithHoles(arr) {
     if (Array.isArray(arr)) return arr;
@@ -36,29 +494,6 @@ var vangen = (function (exports) {
 
   var iterableToArrayLimit = _iterableToArrayLimit;
 
-  function _arrayLikeToArray(arr, len) {
-    if (len == null || len > arr.length) len = arr.length;
-
-    for (var i = 0, arr2 = new Array(len); i < len; i++) {
-      arr2[i] = arr[i];
-    }
-
-    return arr2;
-  }
-
-  var arrayLikeToArray = _arrayLikeToArray;
-
-  function _unsupportedIterableToArray(o, minLen) {
-    if (!o) return;
-    if (typeof o === "string") return arrayLikeToArray(o, minLen);
-    var n = Object.prototype.toString.call(o).slice(8, -1);
-    if (n === "Object" && o.constructor) n = o.constructor.name;
-    if (n === "Map" || n === "Set") return Array.from(o);
-    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return arrayLikeToArray(o, minLen);
-  }
-
-  var unsupportedIterableToArray = _unsupportedIterableToArray;
-
   function _nonIterableRest() {
     throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
   }
@@ -70,10 +505,6 @@ var vangen = (function (exports) {
   }
 
   var slicedToArray = _slicedToArray;
-
-  function createCommonjsModule(fn, module) {
-  	return module = { exports: {} }, fn(module, module.exports), module.exports;
-  }
 
   var runtime_1 = createCommonjsModule(function (module) {
   /**
@@ -827,23 +1258,6 @@ var vangen = (function (exports) {
 
   var regenerator = runtime_1;
 
-  function _defineProperty(obj, key, value) {
-    if (key in obj) {
-      Object.defineProperty(obj, key, {
-        value: value,
-        enumerable: true,
-        configurable: true,
-        writable: true
-      });
-    } else {
-      obj[key] = value;
-    }
-
-    return obj;
-  }
-
-  var defineProperty = _defineProperty;
-
   function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
     try {
       var info = gen[key](arg);
@@ -881,545 +1295,6 @@ var vangen = (function (exports) {
   }
 
   var asyncToGenerator = _asyncToGenerator;
-
-  var _typeof_1 = createCommonjsModule(function (module) {
-  function _typeof(obj) {
-    "@babel/helpers - typeof";
-
-    if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      module.exports = _typeof = function _typeof(obj) {
-        return typeof obj;
-      };
-    } else {
-      module.exports = _typeof = function _typeof(obj) {
-        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-      };
-    }
-
-    return _typeof(obj);
-  }
-
-  module.exports = _typeof;
-  });
-
-  function _arrayWithoutHoles(arr) {
-    if (Array.isArray(arr)) return arrayLikeToArray(arr);
-  }
-
-  var arrayWithoutHoles = _arrayWithoutHoles;
-
-  function _iterableToArray(iter) {
-    if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter);
-  }
-
-  var iterableToArray = _iterableToArray;
-
-  function _nonIterableSpread() {
-    throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
-  }
-
-  var nonIterableSpread = _nonIterableSpread;
-
-  function _toConsumableArray(arr) {
-    return arrayWithoutHoles(arr) || iterableToArray(arr) || unsupportedIterableToArray(arr) || nonIterableSpread();
-  }
-
-  var toConsumableArray = _toConsumableArray;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var classCallCheck = _classCallCheck;
-
-  function _defineProperties(target, props) {
-    for (var i = 0; i < props.length; i++) {
-      var descriptor = props[i];
-      descriptor.enumerable = descriptor.enumerable || false;
-      descriptor.configurable = true;
-      if ("value" in descriptor) descriptor.writable = true;
-      Object.defineProperty(target, descriptor.key, descriptor);
-    }
-  }
-
-  function _createClass(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties(Constructor, staticProps);
-    return Constructor;
-  }
-
-  var createClass = _createClass;
-
-  function isIE() {
-    if (!!window.ActiveXObject || "ActiveXObject" in window || navigator.userAgent.indexOf("Edge") > -1) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-  function loadScript(src) {
-    return new Promise(function (resolve, reject) {
-      var script = document.createElement('script');
-      script.async = true;
-      script.src = src;
-      script.onload = resolve;
-
-      script.onerror = function (error) {
-        return reject(new Error('Unable to load ' + src + ': ' + error));
-      };
-
-      document.body.appendChild(script);
-    });
-  }
-  function loadLink(href) {
-    return new Promise(function (resolve, reject) {
-      var link = document.createElement('link');
-      link.href = href;
-      link.rel = 'stylesheet';
-      link.onload = resolve;
-
-      link.onerror = function (error) {
-        return reject(new Error('Unable to load ' + href + ': ' + error));
-      };
-
-      document.body.appendChild(link);
-    });
-  }
-  var MyLoopQueue = /*#__PURE__*/function () {
-    function MyLoopQueue() {
-      var capacity = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
-
-      classCallCheck(this, MyLoopQueue);
-
-      this.front = 0;
-      this.tail = 0;
-      this.size = 0;
-      this.Queue = new Array(capacity);
-    }
-
-    createClass(MyLoopQueue, [{
-      key: "getSize",
-      value: function getSize() {
-        return this.size;
-      }
-    }, {
-      key: "enqueue",
-      value: function enqueue(E) {
-        var queueLength = this.Queue.length;
-        var tail = this.tail % queueLength; // 如果队列满了，那么就将"第一位"变成"最后一位"
-
-        if (this.tail === this.front && this.getSize() !== 0) {
-          this.front = (this.front + 1) % queueLength;
-        }
-
-        this.tail = (this.tail + 1) % queueLength;
-        this.Queue[tail] = E;
-        this.size++;
-      }
-    }, {
-      key: "dequeue",
-      value: function dequeue() {
-        var queueLength = this.Queue.length; // 如果队列为空，就不能出列了
-
-        if (this.getSize() === 0 && this.front % queueLength === this.tail) {
-          throw new Error("Can't get empty queue");
-        }
-
-        var ret = this.Queue[this.front];
-        this.Queue[this.front] = null;
-        this.front = (this.front + 1) % queueLength;
-        this.size--;
-        return ret;
-      }
-    }, {
-      key: "getQueue",
-      value: function getQueue() {
-        var newQueue = [];
-        var length = this.Queue.length;
-
-        if (this.getSize() < length) {
-          newQueue = this.Queue.slice(0, this.tail);
-        } else if (this.font === 0) {
-          newQueue = this.Queue;
-        } else {
-          var frontQueue = this.Queue.slice(this.front);
-          var tailQueue = this.Queue.slice(0, this.front);
-          newQueue = [].concat(toConsumableArray(frontQueue), toConsumableArray(tailQueue));
-        }
-
-        return newQueue;
-      }
-    }]);
-
-    return MyLoopQueue;
-  }();
-  function isDiff(newValue, oldValue) {
-    var newKeyArr = Object.keys(newValue);
-    var oldKeyArr = Object.keys(oldValue);
-    if (newKeyArr.length !== oldKeyArr.length) return true;
-
-    for (var _i = 0, _newKeyArr = newKeyArr; _i < _newKeyArr.length; _i++) {
-      var key = _newKeyArr[_i];
-      if (_typeof_1(newValue[key]) === 'object' || _typeof_1(oldValue[key]) === 'object') continue;
-
-      if (newValue[key] !== oldValue[key]) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  var CONFIG_COUNT = 50;
-  var MAX_COUNT = CONFIG_COUNT ;
-  var queue =  new MyLoopQueue(MAX_COUNT);
-  function initRecord() {
-    window.rrweb.record({
-      emit: function emit(event) {
-        if (queue.getSize() >= MAX_COUNT) {
-          queue.dequeue();
-        }
-
-        queue.enqueue(event);
-      }
-    });
-  }
-  function getEventRecord() {
-    return _getEventRecord.apply(this, arguments);
-  }
-
-  function _getEventRecord() {
-    _getEventRecord = asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee() {
-      return regenerator.wrap(function _callee$(_context) {
-        while (1) {
-          switch (_context.prev = _context.next) {
-            case 0:
-              return _context.abrupt("return", queue.getQueue());
-
-            case 1:
-            case "end":
-              return _context.stop();
-          }
-        }
-      }, _callee);
-    }));
-    return _getEventRecord.apply(this, arguments);
-  }
-
-  function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
-
-  function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
-
-  var BASE_URL = "http://localhost:3090";
-  var frontbugConfig = {
-    isFramework: true,
-    isNeedRecord: true
-  };
-
-  {
-    loadLink("https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.css");
-    loadScript("https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.js").then(function () {
-      initRecord();
-    });
-  }
-
-  var URL_GROUP = {
-    error: BASE_URL + "/errorRequest",
-    performance: BASE_URL + "/performance"
-  };
-  var _preError = null;
-  /**
-   * 手动上报错误
-   * @param {Object} err 错误对象
-   * @param {Boolean} isFramework 是否是框架，即代码是否被编译
-   */
-
-  var reportError = /*#__PURE__*/function () {
-    var _ref = asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee2(error) {
-      var isFramework,
-          errorObjGroup,
-          errorObj,
-          eventsRecord,
-          _args2 = arguments;
-      return regenerator.wrap(function _callee2$(_context2) {
-        while (1) {
-          switch (_context2.prev = _context2.next) {
-            case 0:
-              isFramework = _args2.length > 1 && _args2[1] !== undefined ? _args2[1] : frontbugConfig.isFramework;
-              error.type = error.type || "default";
-              errorObjGroup = {
-                unhandledrejection: {
-                  type: error.type,
-                  msg: error.reason
-                },
-                network: handleNetwork(error),
-                "default": handleError(error)
-              };
-              errorObj = errorObjGroup[error.type]; // 对同一个错误不进行重复发送
-
-              if (!(_preError && !isDiff(errorObj, _preError))) {
-                _context2.next = 8;
-                break;
-              }
-
-              return _context2.abrupt("return");
-
-            case 8:
-              _preError = errorObj;
-
-            case 9:
-
-              _context2.next = 12;
-              return getEventRecord();
-
-            case 12:
-              _context2.t0 = _context2.sent;
-              _context2.next = 16;
-              break;
-
-            case 15:
-              _context2.t0 = [];
-
-            case 16:
-              eventsRecord = _context2.t0;
-              errorObj = _objectSpread(_objectSpread({}, errorObj), {}, {
-                eventsRecord: eventsRecord,
-                url: window.location.href,
-                framework: isFramework
-              });
-              setTimeout( /*#__PURE__*/asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee() {
-                return regenerator.wrap(function _callee$(_context) {
-                  while (1) {
-                    switch (_context.prev = _context.next) {
-                      case 0:
-                        report$1(URL_GROUP["error"], errorObj);
-
-                      case 1:
-                      case "end":
-                        return _context.stop();
-                    }
-                  }
-                }, _callee);
-              })), 30);
-
-            case 19:
-            case "end":
-              return _context2.stop();
-          }
-        }
-      }, _callee2);
-    }));
-
-    return function reportError(_x) {
-      return _ref.apply(this, arguments);
-    };
-  }();
-
-  function report$1(reportUrl, dataObj) {
-    var data = JSON.stringify(dataObj);
-
-    if (window.navigator.sendBeacon) {
-      window.navigator.sendBeacon(reportUrl + "FromBeacon", data); // IE的URL长度限制为2083，其余浏览器更大，支持最小且主流的Chrome长度限制为8182
-    } else if (isIE() && encodeURIComponent(data).length < 2083 || !isIE() && encodeURIComponent(data).length < 8182) {
-      var image = new Image();
-      image.src = reportUrl + "?error=" + encodeURIComponent(data);
-    } else if (window.fetch) {
-      fetch(reportUrl, {
-        body: data,
-        method: "POST",
-        headers: {
-          "content-type": "application/json; charset=utf-8"
-        }
-      });
-    } else {
-      var XHR = null;
-
-      if (window.XMLHttpRequest) {
-        XHR = new window.XMLHttpRequest();
-      } else if (window.ActiveXObject) {
-        XHR = new window.ActiveXObject();
-      } // XHR.withCredentials = true
-
-
-      XHR.open("POST", reportUrl, true);
-      XHR.setRequestHeader("Content-Type", "application/json; charset=utf-8");
-      XHR.send(data);
-    }
-  }
-
-  function handleError(error) {
-    var msg = error.message;
-    var errorStack = error.stack && error.stack.split("\n") || [];
-    var pattern = window.location.origin;
-    var errorStackPosition = errorStack.find(function (errorItem) {
-      return new RegExp(pattern).test(errorItem);
-    });
-
-    if (errorStackPosition) {
-      var index = errorStackPosition.lastIndexOf("/");
-
-      var _errorStackPosition$s = errorStackPosition.substr(index + 1).split(":"),
-          _errorStackPosition$s2 = slicedToArray(_errorStackPosition$s, 3),
-          path = _errorStackPosition$s2[0],
-          lineNoStr = _errorStackPosition$s2[1],
-          columnNoStr = _errorStackPosition$s2[2];
-
-      var lineNo = Number(lineNoStr.match(/\d+/)[0]);
-      var columnNo = Number(columnNoStr.match(/\d+/)[0]);
-      return {
-        path: path,
-        lineNo: lineNo,
-        columnNo: columnNo,
-        msg: msg,
-        error: error
-      };
-    }
-
-    return false;
-  }
-
-  function handleNetwork(error) {
-    var type = error.type,
-        status = error.status,
-        responseURL = error.responseURL,
-        statusText = error.statusText,
-        responseText = error.responseText,
-        headers = error.headers,
-        method = error.method;
-    return {
-      type: type,
-      status: status,
-      requestUrl: responseURL,
-      msg: statusText,
-      errorInfo: responseText,
-      headers: headers,
-      method: method
-    };
-  }
-
-  var oXMLHttpRequest = window.XMLHttpRequest;
-
-  var XMLHttpRequestProxy = /*#__PURE__*/function () {
-    function XMLHttpRequestProxy() {
-      classCallCheck(this, XMLHttpRequestProxy);
-
-      this._xmlRequest = new oXMLHttpRequest();
-      this._headers = {};
-      this.method = "get";
-      this.readyState = 0;
-      this.type = "network";
-      this.status = 0;
-      this._coverAttr = {
-        open: this.open,
-        send: this.send,
-        setRequestHeader: this.setRequestHeader
-      };
-      this.initCover();
-    }
-
-    createClass(XMLHttpRequestProxy, [{
-      key: "initCover",
-      value: function initCover() {
-        var _this = this;
-
-        var _loop = function _loop(key) {
-          var isCoverAttr = _this._coverAttr.hasOwnProperty(key);
-
-          Object.defineProperty(_this, key, {
-            get: function get() {
-              return isCoverAttr ? _this._coverAttr[key] : _this._xmlRequest[key];
-            },
-            set: function set(newValue) {
-              if (key === "onreadystatechange") {
-                _this._xmlRequest[key] = newValue;
-              } else {
-                isCoverAttr ? _this._coverAttr[key] : _this._xmlRequest[key];
-              }
-            }
-          });
-        };
-
-        for (var key in this._xmlRequest) {
-          _loop(key);
-        }
-      }
-    }, {
-      key: "open",
-      value: function open(method, url) {
-        var _this$_xmlRequest;
-
-        this.method = method;
-
-        for (var _len = arguments.length, args = new Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
-          args[_key - 2] = arguments[_key];
-        }
-
-        (_this$_xmlRequest = this._xmlRequest).open.apply(_this$_xmlRequest, [method, url].concat(args));
-      }
-    }, {
-      key: "send",
-      value: function send(data) {
-        if (!data) data = null;
-
-        this._xmlRequest.send(data);
-
-        if (this.readyState === 4 && !/2\d{2}/.test(this.status)) {
-          reportError(this, false);
-        }
-      }
-    }, {
-      key: "setRequestHeader",
-      value: function setRequestHeader(header, value) {
-        this._headers[header] = value;
-
-        this._xmlRequest.setRequestHeader(header, value);
-      }
-    }]);
-
-    return XMLHttpRequestProxy;
-  }();
-
-  function ownKeys$1(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
-
-  function _objectSpread$1(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys$1(Object(source), true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys$1(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
-  var fetchProxy = window.fetch;
-
-  var fetchRequestProxy = function fetchRequestProxy(url) {
-    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-    return fetchProxy(url, options).then(function (res) {
-      var status = res.status,
-          statusText = res.statusText,
-          url = res.url;
-
-      if (!/2\d{2}/.test(status)) {
-        var errorObj = {
-          status: status,
-          statusText: statusText,
-          type: "network",
-          url: url,
-          method: "get",
-          headers: {}
-        };
-
-        if (options) {
-          var headers = [];
-          options.headers.keys(function (key) {
-            headers[key] = options.headers.get(key);
-          });
-          errorObj = _objectSpread$1(_objectSpread$1({}, errorObj), {}, {
-            method: options.method,
-            headers: headers
-          });
-        }
-
-        reportError(errorObj);
-      }
-    });
-  };
-
-  window.fetch = fetchRequestProxy;
 
   var setPrototypeOf = createCommonjsModule(function (module) {
   function _setPrototypeOf(o, p) {
@@ -1482,109 +1357,267 @@ var vangen = (function (exports) {
   module.exports = _getPrototypeOf;
   });
 
+  var CONFIG_COUNT = 50;
+  var MAX_COUNT = CONFIG_COUNT ;
+  var queue =  new MyLoopQueue(MAX_COUNT);
+  function initRecord() {
+    window.rrweb.record({
+      emit: function emit(event) {
+        if (queue.getSize() >= MAX_COUNT) {
+          queue.dequeue();
+        }
+
+        queue.enqueue(event);
+      }
+    });
+  }
+  function getEventRecord() {
+    return _getEventRecord.apply(this, arguments);
+  }
+
+  function _getEventRecord() {
+    _getEventRecord = asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee() {
+      return regenerator.wrap(function _callee$(_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              return _context.abrupt("return", queue.getQueue());
+
+            case 1:
+            case "end":
+              return _context.stop();
+          }
+        }
+      }, _callee);
+    }));
+    return _getEventRecord.apply(this, arguments);
+  }
+
+  function ownKeys$2(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+  function _objectSpread$2(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys$2(Object(source), true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys$2(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
   function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return possibleConstructorReturn(this, result); }; }
 
   function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
-  // const oldError = console.error
-  // console.error = function(e) {
-  //   try {
-  //     throw new Error(e)
-  //   } catch(err) {
-  //     const stackT = err.stack.split('\n')[2]
-  //     let errObj = handleError(stackT);
-  //     if (!errObj) {
-  //       return false;
-  //     }
-  //     report({ msg: err.message, ...errObj, error: err.stack });
-  //   }
-  //   return oldError.apply(console, arguments)
-  // }
-  // // 重写Promise.reject
-  // const oldReject = Promise.reject
-  // Promise.reject = function(e) {
-  //   try {
-  //     throw new Error(e)
-  //   } catch(err) {
-  //     const stackT = err.stack.split('\n')[2]
-  //     let errObj = handleError(stackT);
-  //     if (!errObj) {
-  //       return false;
-  //     }
-  //     report({ msg: err.message, ...errObj, error: err.stack });
-  //   }
-  //   return () => oldReject.apply(Promise, arguments)
-  // }
 
-  window.onerror = function (msg, path, lineNo, columnNo, error) {
-    var errorObj = {
-      msg: msg,
-      path: path,
-      lineNo: lineNo,
-      columnNo: columnNo,
-      error: error,
-      framework: ''
-    };
-    report(errorObj);
-  };
+  var ErrorMonitor = /*#__PURE__*/function () {
+    function ErrorMonitor(options) {
+      classCallCheck(this, ErrorMonitor);
 
-  window.addEventListener('error', function (event) {
-    reportError(event.error, false);
-  }, true); // 对没有catch的reject进行监听
+      this.creatcErrorFactory();
+      this._options = options;
+      this.isFramework = options.isFramework;
+      this.reportErrorUrl = options.BASE_URL + "/errorRequest";
+    }
 
-  window.addEventListener('unhandledrejection', function (event) {
-    event.preventDefault();
-    var type = event.type,
-        reason = event.reason;
-    reportError({
-      type: type,
-      msg: reason
-    }, false);
-  }); // 对vue进行上报
+    createClass(ErrorMonitor, [{
+      key: "creatcErrorFactory",
+      value: function creatcErrorFactory() {
+        var _self = this; // window.onerror = (
+        //   message: any,
+        //   path?: string,
+        //   lineNo?: number,
+        //   columnNo?: number,
+        //   error?: Error
+        // ): any => {
+        //   _self.reportError(
+        //     { message, path, lineNo, columnNo, error },
+        //     false,
+        //     _self._options
+        //   );
+        // };
 
-  function install(Vue) {
-    Vue.config.errorHandler = function (err) {
-      reportError(err, true);
-    };
-  } // 对react进行上报
 
-  function ErrorRequest(React) {
-    var Error = /*#__PURE__*/function (_React$Component) {
-      inherits(Error, _React$Component);
+        window.addEventListener("error", function (event) {
+          _self.reportError(event.error, false, _self._options);
+        }, true);
+        window.addEventListener("unhandledrejection", function (event) {
+          event.preventDefault();
+          var type = event.type,
+              reason = event.reason;
 
-      var _super = _createSuper(Error);
-
-      function Error() {
-        classCallCheck(this, Error);
-
-        return _super.apply(this, arguments);
+          _self.reportError({
+            type: type,
+            message: reason
+          }, false, _self._options);
+        });
       }
+    }, {
+      key: "vueErrorProxy",
+      value: function vueErrorProxy() {
+        return function install(Vue) {
+          Vue.config.errorHandler = function (err) {
+            this.reportError(err, true, this._options);
+          };
+        };
+      }
+    }, {
+      key: "reactErrorProxy",
+      value: function reactErrorProxy(React) {
+        return /*#__PURE__*/function (_React$Component) {
+          inherits(Error, _React$Component);
 
-      createClass(Error, [{
-        key: "componentDidCatch",
-        value: function componentDidCatch(err) {
-          reportError(err, true);
+          var _super = _createSuper(Error);
+
+          function Error() {
+            classCallCheck(this, Error);
+
+            return _super.apply(this, arguments);
+          }
+
+          createClass(Error, [{
+            key: "componentDidCatch",
+            value: function componentDidCatch(err) {
+              this.reportError(err, true, this._options);
+            }
+          }, {
+            key: "render",
+            value: function render() {
+              return this.props.children;
+            }
+          }]);
+
+          return Error;
+        }(React.Component);
+      }
+      /**
+       * 手动上报错误
+       * @param {Object} err 错误对象
+       * @param {Boolean} isFramework 是否是框架，即代码是否被编译
+       */
+
+    }, {
+      key: "reportError",
+      value: function () {
+        var _reportError = asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee(error) {
+          var isFramework,
+              options,
+              errorObj,
+              eventsRecord,
+              _args = arguments;
+          return regenerator.wrap(function _callee$(_context) {
+            while (1) {
+              switch (_context.prev = _context.next) {
+                case 0:
+                  isFramework = _args.length > 1 && _args[1] !== undefined ? _args[1] : this.isFramework;
+                  options = _args.length > 2 ? _args[2] : undefined;
+                  errorObj = error.type === "unhandledrejection" ? {
+                    type: error.type,
+                    msg: error.reason
+                  } : this._handleError(error);
+
+                  if (!options.isNeedRecord) {
+                    _context.next = 9;
+                    break;
+                  }
+
+                  _context.next = 6;
+                  return getEventRecord();
+
+                case 6:
+                  _context.t0 = _context.sent;
+                  _context.next = 10;
+                  break;
+
+                case 9:
+                  _context.t0 = [];
+
+                case 10:
+                  eventsRecord = _context.t0;
+                  errorObj = _objectSpread$2(_objectSpread$2({}, errorObj), {}, {
+                    eventsRecord: eventsRecord,
+                    url: window.location.href,
+                    framework: isFramework
+                  });
+                  report(this.reportErrorUrl, errorObj);
+
+                case 13:
+                case "end":
+                  return _context.stop();
+              }
+            }
+          }, _callee, this);
+        }));
+
+        function reportError(_x) {
+          return _reportError.apply(this, arguments);
         }
-      }, {
-        key: "render",
-        value: function render() {
-          return this.props.children;
+
+        return reportError;
+      }()
+    }, {
+      key: "_handleError",
+      value: function _handleError(error) {
+        var msg = error.message;
+        var errorStack = error.stack && error.stack.split("\n") || [];
+        var pattern = window.location.origin;
+        var errorStackPosition = errorStack.find(function (errorItem) {
+          return new RegExp(pattern).test(errorItem);
+        });
+
+        if (errorStackPosition) {
+          var index = errorStackPosition.lastIndexOf("/");
+
+          var _errorStackPosition$s = errorStackPosition.substr(index + 1).split(":"),
+              _errorStackPosition$s2 = slicedToArray(_errorStackPosition$s, 3),
+              path = _errorStackPosition$s2[0],
+              _errorStackPosition$s3 = _errorStackPosition$s2[1],
+              lineNoStr = _errorStackPosition$s3 === void 0 ? "" : _errorStackPosition$s3,
+              _errorStackPosition$s4 = _errorStackPosition$s2[2],
+              columnNoStr = _errorStackPosition$s4 === void 0 ? "" : _errorStackPosition$s4;
+
+          var lineNo = Number((lineNoStr.match(/\d+/) || [])[0]);
+          var columnNo = Number((columnNoStr.match(/\d+/) || [])[0]);
+          return {
+            path: path,
+            lineNo: lineNo,
+            columnNo: columnNo,
+            msg: msg,
+            error: error
+          };
         }
-      }]);
 
-      return Error;
-    }(React.Component);
+        return false;
+      }
+    }]);
 
-    return Error;
-  }
+    return ErrorMonitor;
+  }();
 
-  XMLHttpRequest = XMLHttpRequestProxy;
-  var index = {
-    install: install
+  var defaultConfig = {
+    BASE_URL: "http://localhost:3090",
+    isFramework: true,
+    isNeedRecord: true
   };
 
-  exports.ErrorRequest = ErrorRequest;
-  exports.default = index;
+  function createMonitor(options) {
+    var lastConfig = Object.assign(defaultConfig, options);
 
-  return exports;
+    if (lastConfig.isNeedRecord) {
+      loadLink("https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.css");
+      loadScript("https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.js").then(function () {
+        initRecord();
+      });
+    }
 
-}({}));
+    initHttpProxy(lastConfig);
+    var errorMonitor = new ErrorMonitor(lastConfig);
+    var install = errorMonitor.vueErrorProxy();
+    var ErrorWatch = errorMonitor.reactErrorProxy;
+    return {
+      install: install,
+      ErrorWatch: ErrorWatch
+    };
+  } // export const URL_GROUP = {
+  //   error: BASE_URL + "/errorRequest",
+  //   performance: BASE_URL + "/performance"
+  // };
+
+
+  var Vangen = {};
+  Vangen.init = createMonitor;
+
+  return Vangen;
+
+}());

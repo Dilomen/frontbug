@@ -1,8 +1,9 @@
 import initXMLHttpRequest from "./ajaxProxy";
 import initFetch from "./fetchProxy";
+import { VangenConfig } from "../interface";
 
-function initHttpProxy(options) {
-  window.XMLHttpRequest = initXMLHttpRequest(options);
+function initHttpProxy(options:VangenConfig) {
+  initXMLHttpRequest(options);
   window.fetch = initFetch(options);
 }
 

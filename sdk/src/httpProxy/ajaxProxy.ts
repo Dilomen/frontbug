@@ -1,5 +1,5 @@
 import { reportNetworkError } from "./handleError";
-import { VangenConfig } from '../interface'
+import { VangenConfig } from "../interface";
 interface XMLConfig {
   open: (
     method: string,
@@ -23,7 +23,6 @@ const assignmentsFn: string[] = [
   "onabort"
 ];
 
-
 const oXMLHttpRequest: any = window.XMLHttpRequest;
 
 class XMLHttpRequestProxy implements XMLConfig {
@@ -34,7 +33,7 @@ class XMLHttpRequestProxy implements XMLConfig {
   private readyState: number;
   private type: "network";
   private status: any;
-  static _options: VangenConfig
+  static _options: VangenConfig;
   constructor() {
     this._xmlRequest = new oXMLHttpRequest();
     this._headers = {};
@@ -83,8 +82,8 @@ class XMLHttpRequestProxy implements XMLConfig {
 
 window.XMLHttpRequest = XMLHttpRequestProxy;
 
-function initXMLHttpRequest(options:VangenConfig) {
-  XMLHttpRequestProxy._options = options
+function initXMLHttpRequest(options: VangenConfig) {
+  XMLHttpRequestProxy._options = options;
 }
 
 export default initXMLHttpRequest;

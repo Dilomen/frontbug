@@ -231,6 +231,40 @@
 
     return MyLoopQueue;
   }();
+  var LoopQueue = /*#__PURE__*/function () {
+    function LoopQueue() {
+      classCallCheck(this, LoopQueue);
+
+      this.Queue = [];
+      this.size = 0;
+    }
+
+    createClass(LoopQueue, [{
+      key: "getSize",
+      value: function getSize() {
+        return this.size;
+      }
+    }, {
+      key: "enqueue",
+      value: function enqueue(E) {
+        this.Queue.push(E);
+        ++this.size;
+      }
+    }, {
+      key: "dequeue",
+      value: function dequeue() {
+        this.Queue.shift();
+        --this.size;
+      }
+    }, {
+      key: "getQueue",
+      value: function getQueue() {
+        return this.Queue;
+      }
+    }]);
+
+    return LoopQueue;
+  }();
   function isDiff(newValue, oldValue) {
     var newKeyArr = Object.keys(newValue);
     var oldKeyArr = Object.keys(oldValue);
@@ -458,56 +492,9 @@
   }
 
   function initHttpProxy(options) {
-    window.XMLHttpRequest = initXMLHttpRequest(options);
+    initXMLHttpRequest(options);
     window.fetch = createFetchRequest(options);
   }
-
-  function _arrayWithHoles(arr) {
-    if (Array.isArray(arr)) return arr;
-  }
-
-  var arrayWithHoles = _arrayWithHoles;
-
-  function _iterableToArrayLimit(arr, i) {
-    if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return;
-    var _arr = [];
-    var _n = true;
-    var _d = false;
-    var _e = undefined;
-
-    try {
-      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
-        _arr.push(_s.value);
-
-        if (i && _arr.length === i) break;
-      }
-    } catch (err) {
-      _d = true;
-      _e = err;
-    } finally {
-      try {
-        if (!_n && _i["return"] != null) _i["return"]();
-      } finally {
-        if (_d) throw _e;
-      }
-    }
-
-    return _arr;
-  }
-
-  var iterableToArrayLimit = _iterableToArrayLimit;
-
-  function _nonIterableRest() {
-    throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
-  }
-
-  var nonIterableRest = _nonIterableRest;
-
-  function _slicedToArray(arr, i) {
-    return arrayWithHoles(arr) || iterableToArrayLimit(arr, i) || unsupportedIterableToArray(arr, i) || nonIterableRest();
-  }
-
-  var slicedToArray = _slicedToArray;
 
   var runtime_1 = createCommonjsModule(function (module) {
   /**
@@ -1261,6 +1248,53 @@
 
   var regenerator = runtime_1;
 
+  function _arrayWithHoles(arr) {
+    if (Array.isArray(arr)) return arr;
+  }
+
+  var arrayWithHoles = _arrayWithHoles;
+
+  function _iterableToArrayLimit(arr, i) {
+    if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return;
+    var _arr = [];
+    var _n = true;
+    var _d = false;
+    var _e = undefined;
+
+    try {
+      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+        _arr.push(_s.value);
+
+        if (i && _arr.length === i) break;
+      }
+    } catch (err) {
+      _d = true;
+      _e = err;
+    } finally {
+      try {
+        if (!_n && _i["return"] != null) _i["return"]();
+      } finally {
+        if (_d) throw _e;
+      }
+    }
+
+    return _arr;
+  }
+
+  var iterableToArrayLimit = _iterableToArrayLimit;
+
+  function _nonIterableRest() {
+    throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+  }
+
+  var nonIterableRest = _nonIterableRest;
+
+  function _slicedToArray(arr, i) {
+    return arrayWithHoles(arr) || iterableToArrayLimit(arr, i) || unsupportedIterableToArray(arr, i) || nonIterableRest();
+  }
+
+  var slicedToArray = _slicedToArray;
+
   function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
     try {
       var info = gen[key](arg);
@@ -1360,99 +1394,125 @@
   module.exports = _getPrototypeOf;
   });
 
-  var CONFIG_COUNT = 50;
-  var MAX_COUNT = CONFIG_COUNT ;
-  var queue =  new MyLoopQueue(MAX_COUNT);
-  function initRecord() {
-    window.rrweb.record({
-      emit: function emit(event) {
-        if (queue.getSize() >= MAX_COUNT) {
-          queue.dequeue();
+  var RrwebControl = /*#__PURE__*/function () {
+    function RrwebControl() {
+      classCallCheck(this, RrwebControl);
+
+      this.MAX_COUNT = 100;
+      this.queue = null;
+    }
+
+    createClass(RrwebControl, [{
+      key: "instance",
+      value: function instance() {
+        var RRWEB_COUNT = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 100;
+
+        if (RRWEB_COUNT < 0) {
+          throw new Error('RRWEB_COUNT 必须设置大于0');
         }
 
-        queue.enqueue(event);
+        this.MAX_COUNT = RRWEB_COUNT || 100;
+        this.queue = this.MAX_COUNT <= 10 ? new LoopQueue() : new MyLoopQueue(this.MAX_COUNT);
+        this.loadRrweb();
       }
-    });
-  }
-  function getEventRecord() {
-    return _getEventRecord.apply(this, arguments);
-  }
+    }, {
+      key: "loadRrweb",
+      value: function loadRrweb() {
+        var _this = this;
 
-  function _getEventRecord() {
-    _getEventRecord = asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee() {
-      return regenerator.wrap(function _callee$(_context) {
-        while (1) {
-          switch (_context.prev = _context.next) {
-            case 0:
-              return _context.abrupt("return", queue.getQueue());
+        loadLink("https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.css");
+        loadScript("https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.js").then(function () {
+          _this.initRecord();
+        });
+      }
+    }, {
+      key: "initRecord",
+      value: function initRecord() {
+        window.rrweb.record({
+          emit: function emit(event) {
+            if (this.queue.getSize() >= this.MAX_COUNT) {
+              this.queue.dequeue();
+            }
 
-            case 1:
-            case "end":
-              return _context.stop();
+            this.queue.enqueue(event);
           }
+        });
+      }
+    }, {
+      key: "getEventRecord",
+      value: function () {
+        var _getEventRecord = asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee() {
+          return regenerator.wrap(function _callee$(_context) {
+            while (1) {
+              switch (_context.prev = _context.next) {
+                case 0:
+                  return _context.abrupt("return", this.queue.getQueue());
+
+                case 1:
+                case "end":
+                  return _context.stop();
+              }
+            }
+          }, _callee, this);
+        }));
+
+        function getEventRecord() {
+          return _getEventRecord.apply(this, arguments);
         }
-      }, _callee);
-    }));
-    return _getEventRecord.apply(this, arguments);
-  }
 
-  function ownKeys$2(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+        return getEventRecord;
+      }()
+    }]);
 
-  function _objectSpread$2(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys$2(Object(source), true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys$2(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+    return RrwebControl;
+  }();
+
+  var rrwebControl = new RrwebControl();
 
   function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return possibleConstructorReturn(this, result); }; }
 
   function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
 
+  function ownKeys$2(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+  function _objectSpread$2(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys$2(Object(source), true).forEach(function (key) { defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys$2(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+  var _options = {};
+
   var ErrorMonitor = /*#__PURE__*/function () {
-    function ErrorMonitor(options) {
+    function ErrorMonitor() {
       classCallCheck(this, ErrorMonitor);
 
       this.creatcErrorFactory();
-      this._options = options;
-      this.isFramework = options.isFramework;
-      this.reportErrorUrl = options.BASE_URL + "/errorRequest";
     }
 
     createClass(ErrorMonitor, [{
+      key: "initConfig",
+      value: function initConfig(options) {
+        _options = _objectSpread$2(_objectSpread$2({}, options), {}, {
+          reportErrorUrl: options.BASE_URL + "/errorRequest"
+        });
+      }
+    }, {
       key: "creatcErrorFactory",
       value: function creatcErrorFactory() {
-        var _self = this; // window.onerror = (
-        //   message: any,
-        //   path?: string,
-        //   lineNo?: number,
-        //   columnNo?: number,
-        //   error?: Error
-        // ): any => {
-        //   _self.reportError(
-        //     { message, path, lineNo, columnNo, error },
-        //     false,
-        //     _self._options
-        //   );
-        // };
-
-
         window.addEventListener("error", function (event) {
-          _self.reportError(event.error, false, _self._options);
+          reportError(event.error, (_options || {}).isFramework || false, _options || {});
         }, true);
         window.addEventListener("unhandledrejection", function (event) {
           event.preventDefault();
           var type = event.type,
               reason = event.reason;
-
-          _self.reportError({
+          reportError({
             type: type,
             message: reason
-          }, false, _self._options);
+          }, (_options || {}).isFramework || false, _options || {});
         });
       }
     }, {
       key: "vueErrorProxy",
-      value: function vueErrorProxy() {
-        return function install(Vue) {
-          Vue.config.errorHandler = function (err) {
-            this.reportError(err, true, this._options);
-          };
+      value: function vueErrorProxy(Vue) {
+        Vue.config.errorHandler = function (err) {
+          reportError(err, true, _options);
         };
       }
     }, {
@@ -1472,7 +1532,7 @@
           createClass(Error, [{
             key: "componentDidCatch",
             value: function componentDidCatch(err) {
-              this.reportError(err, true, this._options);
+              reportError(err, true, _options);
             }
           }, {
             key: "render",
@@ -1484,139 +1544,134 @@
           return Error;
         }(React.Component);
       }
-      /**
-       * 手动上报错误
-       * @param {Object} err 错误对象
-       * @param {Boolean} isFramework 是否是框架，即代码是否被编译
-       */
-
-    }, {
-      key: "reportError",
-      value: function () {
-        var _reportError = asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee(error) {
-          var isFramework,
-              options,
-              errorObj,
-              eventsRecord,
-              _args = arguments;
-          return regenerator.wrap(function _callee$(_context) {
-            while (1) {
-              switch (_context.prev = _context.next) {
-                case 0:
-                  isFramework = _args.length > 1 && _args[1] !== undefined ? _args[1] : this.isFramework;
-                  options = _args.length > 2 ? _args[2] : undefined;
-                  errorObj = error.type === "unhandledrejection" ? {
-                    type: error.type,
-                    msg: error.reason
-                  } : this._handleError(error);
-
-                  if (!options.isNeedRecord) {
-                    _context.next = 9;
-                    break;
-                  }
-
-                  _context.next = 6;
-                  return getEventRecord();
-
-                case 6:
-                  _context.t0 = _context.sent;
-                  _context.next = 10;
-                  break;
-
-                case 9:
-                  _context.t0 = [];
-
-                case 10:
-                  eventsRecord = _context.t0;
-                  errorObj = _objectSpread$2(_objectSpread$2({}, errorObj), {}, {
-                    eventsRecord: eventsRecord,
-                    url: window.location.href,
-                    framework: isFramework
-                  });
-                  report(this.reportErrorUrl, errorObj);
-
-                case 13:
-                case "end":
-                  return _context.stop();
-              }
-            }
-          }, _callee, this);
-        }));
-
-        function reportError(_x) {
-          return _reportError.apply(this, arguments);
-        }
-
-        return reportError;
-      }()
-    }, {
-      key: "_handleError",
-      value: function _handleError(error) {
-        var msg = error.message;
-        var errorStack = error.stack && error.stack.split("\n") || [];
-        var pattern = window.location.origin;
-        var errorStackPosition = errorStack.find(function (errorItem) {
-          return new RegExp(pattern).test(errorItem);
-        });
-
-        if (errorStackPosition) {
-          var index = errorStackPosition.lastIndexOf("/");
-
-          var _errorStackPosition$s = errorStackPosition.substr(index + 1).split(":"),
-              _errorStackPosition$s2 = slicedToArray(_errorStackPosition$s, 3),
-              path = _errorStackPosition$s2[0],
-              _errorStackPosition$s3 = _errorStackPosition$s2[1],
-              lineNoStr = _errorStackPosition$s3 === void 0 ? "" : _errorStackPosition$s3,
-              _errorStackPosition$s4 = _errorStackPosition$s2[2],
-              columnNoStr = _errorStackPosition$s4 === void 0 ? "" : _errorStackPosition$s4;
-
-          var lineNo = Number((lineNoStr.match(/\d+/) || [])[0]);
-          var columnNo = Number((columnNoStr.match(/\d+/) || [])[0]);
-          return {
-            path: path,
-            lineNo: lineNo,
-            columnNo: columnNo,
-            msg: msg,
-            error: error
-          };
-        }
-
-        return false;
-      }
     }]);
 
     return ErrorMonitor;
   }();
+  /**
+   * 手动上报错误
+   * @param {Object} err 错误对象
+   * @param {Boolean} isFramework 是否是框架，即代码是否被编译
+   */
+
+
+  function reportError(_x, _x2, _x3) {
+    return _reportError.apply(this, arguments);
+  }
+
+  function _reportError() {
+    _reportError = asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee(error, isFramework, options) {
+      var errorObj, eventsRecord;
+      return regenerator.wrap(function _callee$(_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              errorObj = error.type === "unhandledrejection" ? {
+                type: error.type,
+                msg: error.reason
+              } : handleError(error);
+
+              if (!options.isNeedRecord) {
+                _context.next = 7;
+                break;
+              }
+
+              _context.next = 4;
+              return rrwebControl.getEventRecord();
+
+            case 4:
+              _context.t0 = _context.sent;
+              _context.next = 8;
+              break;
+
+            case 7:
+              _context.t0 = [];
+
+            case 8:
+              eventsRecord = _context.t0;
+              errorObj = _objectSpread$2(_objectSpread$2({}, errorObj), {}, {
+                eventsRecord: eventsRecord,
+                url: window.location.href,
+                framework: isFramework
+              });
+              report(options.reportErrorUrl || "", errorObj);
+
+            case 11:
+            case "end":
+              return _context.stop();
+          }
+        }
+      }, _callee);
+    }));
+    return _reportError.apply(this, arguments);
+  }
+
+  function handleError(error) {
+    var msg = error.message;
+    var errorStack = error.stack && error.stack.split("\n") || [];
+    var pattern = window.location.origin;
+    var errorStackPosition = errorStack.find(function (errorItem) {
+      return new RegExp(pattern).test(errorItem);
+    });
+
+    if (errorStackPosition) {
+      var index = errorStackPosition.lastIndexOf("/");
+
+      var _errorStackPosition$s = errorStackPosition.substr(index + 1).split(":"),
+          _errorStackPosition$s2 = slicedToArray(_errorStackPosition$s, 3),
+          path = _errorStackPosition$s2[0],
+          _errorStackPosition$s3 = _errorStackPosition$s2[1],
+          lineNoStr = _errorStackPosition$s3 === void 0 ? "" : _errorStackPosition$s3,
+          _errorStackPosition$s4 = _errorStackPosition$s2[2],
+          columnNoStr = _errorStackPosition$s4 === void 0 ? "" : _errorStackPosition$s4;
+
+      var lineNo = Number((lineNoStr.match(/\d+/) || [])[0]);
+      var columnNo = Number((columnNoStr.match(/\d+/) || [])[0]);
+      return {
+        path: path,
+        lineNo: lineNo,
+        columnNo: columnNo,
+        msg: msg,
+        error: error
+      };
+    }
+
+    return false;
+  }
+
+  var errorMonitor = new ErrorMonitor();
+  var install = errorMonitor.vueErrorProxy;
+  var ErrorWatch = errorMonitor.reactErrorProxy;
 
   var defaultConfig = {
-    BASE_URL: "http://localhost:3090",
     isFramework: true,
     isNeedRecord: true
   };
 
   function createMonitor(options) {
-    var lastConfig = Object.assign(defaultConfig, options);
+    var vangenConfig = Object.assign(defaultConfig, options);
+    errorMonitor.initConfig(vangenConfig);
 
-    if (lastConfig.isNeedRecord) {
-      loadLink("https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.css");
-      loadScript("https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.js").then(function () {
-        initRecord();
-      });
+    if (!vangenConfig.BASE_URL) {
+      throw new Error("Vangen Error: 请设置BASE_URL");
     }
 
-    initHttpProxy(lastConfig);
-    var errorMonitor = new ErrorMonitor(lastConfig);
-    var install = errorMonitor.vueErrorProxy();
-    var ErrorWatch = errorMonitor.reactErrorProxy;
+    if (vangenConfig.isNeedRecord) {
+      rrwebControl.instance(vangenConfig.RRWEB_COUNT);
+    }
+
+    initHttpProxy(vangenConfig);
+
+    var reportError$1 = function reportError$1(error) {
+      return reportError(error, vangenConfig.isFramework, vangenConfig);
+    };
+
     return {
       install: install,
-      ErrorWatch: ErrorWatch
+      ErrorWatch: ErrorWatch,
+      reportError: reportError$1
     };
-  } // export const URL_GROUP = {
-  //   error: BASE_URL + "/errorRequest",
-  //   performance: BASE_URL + "/performance"
-  // };
-
+  }
 
   var Vangen = {};
   Vangen.init = createMonitor;

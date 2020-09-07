@@ -4,3 +4,5 @@ public
 dist
 lib
 es
+example/
+node_modules

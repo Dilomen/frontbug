@@ -1,3 +1,7 @@
+export interface GlobalWindows extends Window {
+  [propsName: string]: any;
+}
+
 interface BaseError {
   readonly stack?: any;
   message?: any;
@@ -31,7 +35,9 @@ export interface NetworkError extends BaseError {
 }
 
 export interface VangenConfig {
-  BASE_URL: string;
-  isFramework: boolean;
-  isNeedRecord: boolean;
+  BASE_URL?: string;
+  isFramework?: boolean;
+  isNeedRecord?: boolean;
+  reportErrorUrl?: string;
+  RRWEB_COUNT?: number;
 }

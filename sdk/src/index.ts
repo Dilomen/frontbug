@@ -1,36 +1,31 @@
-import httpMonitor from './httpProxy/index'
-import ProgramMonitor from "./pragram/errorMonitor"
-import { initRecord } from "./record";
-import { loadScript, loadLink } from "./utils";
-import { VangenConfig } from './interface'
+import httpMonitor from "./httpProxy/index";
+import errorMonitor, {
+  install,
+  ErrorWatch,
+  reportError as _reportError
+} from "./pragram/errorMonitor";
+import rrwebControl from "./record";
+import { VangenConfig, ProgramError } from "./interface";
 const defaultConfig = {
-  BASE_URL: "http://localhost:3090",
   isFramework: true,
-  isNeedRecord: true
-}
-function createMonitor(options:VangenConfig) {
-  const lastConfig = Object.assign(defaultConfig, options)
-  if (lastConfig.isNeedRecord) {
-    loadLink("https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.css");
-    loadScript(
-      "https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.js"
-    ).then(() => {
-      initRecord();
-    });
+  isNeedRecord: true,
+
+};
+function createMonitor(options: VangenConfig) {
+  const vangenConfig = Object.assign(defaultConfig, options);
+  errorMonitor.initConfig(vangenConfig);
+  if (!vangenConfig.BASE_URL) {
+    throw new Error("Vangen Error: 请设置BASE_URL");
   }
-  httpMonitor(lastConfig)
-  const errorMonitor = new ProgramMonitor(lastConfig);
-  const install = errorMonitor.vueErrorProxy();
-  const ErrorWatch = errorMonitor.reactErrorProxy;
-  return { install, ErrorWatch }
+  if (vangenConfig.isNeedRecord) {
+    rrwebControl.instance(vangenConfig.RRWEB_COUNT);
+  }
+  httpMonitor(vangenConfig);
+  const reportError = (error: ProgramError) =>
+    _reportError(error, vangenConfig.isFramework, vangenConfig);
+  return { install, ErrorWatch, reportError };
 }
 
-
-// export const URL_GROUP = {
-//   error: BASE_URL + "/errorRequest",
-//   performance: BASE_URL + "/performance"
-// };
-let Vangen: any = {}
-Vangen.init = createMonitor
-
-export default Vangen
+let Vangen: any = {};
+Vangen.init = createMonitor;
+export default Vangen;

@@ -11,7 +11,9 @@
 <script src="../../lib/es/index.iife.js">
 </script>
 <script>
-  vangen.init()
+  vangen.init({
+    BASE_URL:"http://localhost:3090"
+  })
 //   new Promise((resolve) => {
 //   resolve();
 // }).then(() => {
@@ -23,12 +25,12 @@
 let a = 1
 a()
 
-// function handle() {
-//   console.log(a)
-// }
-// function handle1() {
-//   console.log(b)
-// }
+function handle() {
+  console.log(a)
+}
+function handle1() {
+  console.log(b)
+}
   // var xml = new XMLHttpRequest()
   // xml.open('get', '/111', false)
   // xml.onreadystatechange = function() {

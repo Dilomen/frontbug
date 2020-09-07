@@ -1,5 +1,6 @@
 const loopSourceMap = require('../utils/loopSourceMap');
 const dayjs = require('dayjs');
+const axios = require('axios')
 class ErrorService {
   constructor(ctx) {
     this.ctx = ctx;
@@ -7,14 +8,14 @@ class ErrorService {
 
   async handleError(data = {}) {
     const {
-      url = '',
-      msg = '',
-      path = '',
-      lineNo = '',
-      columnNo = '',
-      error = '',
-      framework = '',
-      userAgent = {},
+      url:excepUrl = '',
+      msg:excepMsg = '',
+      path:excepFilePath = '',
+      lineNo:excepLine = '',
+      columnNo:excepColumn = '',
+      error:excepStack = '',
+      framework = false,
+      userAgent:excepUserAgent = {},
       eventsRecord = [],
       // network部分
       errorInfo = '',
@@ -23,12 +24,12 @@ class ErrorService {
       type = ''
     } = data;
     const happenTime = dayjs().format('YYYY-MM-DD HH:mm:ss');
-    let errorData = { msg, happenTime, userAgent, url, eventsRecord, error, errorInfo, requestUrl, status, type };
+    let errorData = { excepMsg, userAgent, excepUrl, eventsRecord, excepStack, errorInfo, requestUrl, status, type, excepFilePath };
     if (framework) {
-        const sourceData = await loopSourceMap(path + '.map', lineNo, columnNo)
+        const sourceData = await loopSourceMap(excepFilePath + '.map', excepLine, excepColumn)
         const { sourcesContent, line, source, column } = sourceData;
         const sourceContentArr = sourcesContent.split('\n');
-        errorData = { ...errorData, sourcesContent: sourceContentArr.slice(line - 4, line + 3), line, column, source };
+        errorData = { ...errorData, excepContent: sourceContentArr.slice(line - 4, line + 3), exepLine, exepColumn, source };
     } else {
         errorData = {
         ...errorData,
@@ -36,9 +37,17 @@ class ErrorService {
         line: lineNo,
         source: path,
       };
-      console.log(errorData)
     }
-    return true;
+    const response = await this.sendError(errorData).catch(() => {})
+    return response;
+  }
+
+  sendError(data) {
+    return axios({
+      url: '',
+      method: 'post',
+      data: errorData
+    })
   }
 }
 

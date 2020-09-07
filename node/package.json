@@ -5,9 +5,11 @@
   "license": "MIT",
   "scripts": {
     "start": "node index.js",
+    "start:single": "node app.js",
     "test": "mocha"
   },
   "devDependencies": {
+    "axios": "^0.20.0",
     "co-body": "^6.0.0",
     "dayjs": "^1.8.31",
     "koa": "^2.13.0",

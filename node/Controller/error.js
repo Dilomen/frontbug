@@ -11,8 +11,8 @@ class ErrorController {
         const userAgent = getDeviceInfo(this.ctx)
         await coBody.json(this.ctx.req).then(data => {
             data.userAgent = userAgent
-            const result = new ErrorService(this.ctx).handleError(data)
-            this.ctx.body = result ? { code: 200, msg: '上报成功' } : { msg: '上报失败' }
+            const response = new ErrorService(this.ctx).handleError(data)
+            this.ctx.body = response
         })
     }
 
@@ -20,16 +20,16 @@ class ErrorController {
         const userAgent = getDeviceInfo(this.ctx)
         let data = JSON.parse(this.ctx.request.query.error || '{}')
         data.userAgent = userAgent
-        const result = new ErrorService(this.ctx).handleError(data)
-        this.ctx.body = result ? { code: 200, msg: '上报成功' } : { msg: '上报失败' }
+        const response = new ErrorService(this.ctx).handleError(data)
+        this.ctx.body = response
     }
 
     saveErrorUsePost() {
         const userAgent = getDeviceInfo(this.ctx)
         let data = this.ctx.request.body ? this.ctx.request.body : {}
         data.userAgent = userAgent
-        const result = new ErrorService(this.ctx).handleError(data)
-        this.ctx.body = result ? { code: 200, msg: '上报成功' } : { msg: '上报失败' }
+        const response = new ErrorService(this.ctx).handleError(data)
+        this.ctx.body = response
     }
 }
 
